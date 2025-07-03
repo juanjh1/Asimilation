@@ -8,22 +8,27 @@ import { measureMemory } from 'vm';
 
 let urls = new Paths();
 
-urls.addPath("", "index.html")
+urls.addPath("", (res)=> {
+    res.end(JSON.stringify({ message: '¡Hola, este es tu endpoint sin Express!' }));
+})
 
-const baseDir =exec("cd", (error, stdout, stderr) => {
-    if (error) {
-        console.error(`exec error: ${error}`);
-        return;
-    }
-    if (stderr) {
-        console.error(`stderr: ${stderr}`);
-        return null
-    }
+urls.addPath("hola", (res)=> {
+    res.end(JSON.stringify("hola"));
+})
+// const baseDir =exec("cd", (error, stdout, stderr) => {
+//     if (error) {
+//         console.error(`exec error: ${error}`);
+//         return;
+//     }
+//     if (stderr) {
+//         console.error(`stderr: ${stderr}`);
+//         return null
+//     }
    
-    return stdout
-});
+//     return stdout
+// });
 
-console.log(baseDir)
+//console.log(baseDir)
 const aplications = [
     
 ]
@@ -31,21 +36,19 @@ const aplications = [
 
 
 
-
-
-export const mainServer = http.createServer((req, res)=> {
+export const mainServer = http.createServer((req, res, urls)=> {
     let  header ;
-    if (req.method === "GET" && urls.pathInclude(req.url)) {
 
+    if (urls.pathInclude(req.url)) {
         header = 200;
         // fs.ReadStream
         let message = backendMessaje(header)
         // serch function for se
-        
         message(req)
        
         res.writeHead(header, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: '¡Hola, este es tu endpoint sin Express!' }));
+        
+        urls.execDef(req)(res)
     }else{
         header = 404;
         let date = new Date()

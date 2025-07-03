@@ -1,20 +1,22 @@
 export class Paths {
 
     constructor(){
-        this.paths = [];
+        this.paths = new Map();
     }
 
     pathInclude(url){
-     for( let path of this.paths ){
-         if (path["url"] == url){
-            return true
-         }
-     }
+      return this.paths.has(url)
     }
 
     addPath(url, def ){
-      url = "/" + url
+      if(!/^\//.test(url)){
+        url = "/" + url
+      }
      //this funcions set the function in arrray like django
-     this.paths.push({"url":url, "html":def })
+     this.paths.set(url,{"url":url, "view":def })
+    }
+
+    execDef(req){
+        return this.paths.get(req.url).view
     }
 }
