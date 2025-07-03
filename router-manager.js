@@ -1,7 +1,9 @@
-export class Paths {
+export class RouteManager {
 
     constructor(){
+        // we use map/ thats works becouse each endpoint its unique
         this.paths = new Map();
+        
     }
 
     pathInclude(url){
@@ -12,11 +14,11 @@ export class Paths {
       if(!/^\//.test(url)){
         url = "/" + url
       }
-     //this funcions set the function in arrray like django
      this.paths.set(url,{"url":url, "view":def })
     }
 
     execDef(req){
+        
         return this.paths.get(req.url).view
     }
 }

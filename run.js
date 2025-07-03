@@ -1,8 +1,4 @@
-import { mainServer } from "./main.js";
+import { server } from "./main.js";
 
-
-const port = 3000;
-mainServer.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-   
-});
+const port = 3000
+server.listen(port)

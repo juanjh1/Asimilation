@@ -22,7 +22,7 @@ export const backendMessaje =(status) => {
     for(let color in colorStatusCodeHttp) { 
         color = colorStatusCodeHttp[color]
 
-        if( (color [1]- status) == 0  || ( color[1] - status) < 100 ){
+        if( (color[1]- status) == 0  || ( color[1] - status) < 100 ){
             return (req)=> {
                 console.log(`%c${date[0]} - ${date[1]} ${req.url} ${status}`, `color: #${color[0]};`)
             }
