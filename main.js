@@ -1,23 +1,21 @@
 import http from 'http';
-import fs, { stat } from "fs";
-import { dirname } from 'path';
-import { exec } from 'child_process';
 import { backendMessaje } from './utils.js';
-import { measureMemory } from 'vm';
-
 import { RouteManager } from './router-manager.js';
 
-const urls = new Paths();
-
-urls.addPath("", (res) => {
-    res.end(JSON.stringify({ message: "Hola mi bb" }));
-})
-
-urls.addPath("hola", (res) => {
-    res.end(JSON.stringify("hola"));
-})
 
 
+class UrlManager{
+    #urlManager;
+    constructor(pathManager){
+        this.#urlManager = pathManager
+    }
+    addPath(name, def){
+        this.#urlManager.addPath(name, def);
+    }
+    createRouteModule(name){
+        this.#urlManager.createRouteModule(name);
+    }
+}
 
 
 class Asimilation {
@@ -33,6 +31,8 @@ class Asimilation {
         return http.createServer((req, res) => {
             let header;
             try {
+                console.log(!this.#routerManager.pathInclude(req.url))
+                console.log(this.#routerManager)
                 if (!this.#routerManager.pathInclude(req.url)) {
                     header = 404;
                     let message = backendMessaje(header)
@@ -57,17 +57,19 @@ class Asimilation {
 
     }
 
-    addPath(url, def) {
-        this.#routerManager.addPath(url, def)
-    }
-
     listen(port) {
         this.#liveServer.listen(port, () => {
             console.log(`Servidor corriendo en http://localhost:${port}`);
         });
     }
 
+
+    urlManager(){
+        return new UrlManager(this.#routerManager);
+    }
+
 }
 
 const server = Asimilation.server;
-export { server };
+const url = server.urlManager();
+export { server, url };
