@@ -1,9 +1,9 @@
 import { url } from "./main.js";
 
-url.addPath("", (res) => {
+url.addPath("", (req, res) => {
     res.end(JSON.stringify({ message: "Hola mi bb" }));
 })
 
-url.addPath("hola", (res) => {
+url.addPath("hola", (req, res) => {
     res.end(JSON.stringify("hola"));
 })

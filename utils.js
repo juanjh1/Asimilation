@@ -1,35 +1,22 @@
 import exp from "constants"
 import { exec } from "child_process"
 
-export const backendMessaje =(status) => {
-    
-    const informational = 100
-    const succes = 200 
-    const redirection = 300
-    const clientsError = 400
-    const serverError = 500
+export const backendMessaje = (status) => {
     const colorStatusCodeHttp = {
-        informational : ["F29F58",informational],
-        succes: ["F29F58", succes],
-        redirection : ["AB4459", redirection],
-        clientsError: ["1B1833" , clientsError],
-        serverError: ["D91656", serverError]
-
-    }
+        informational: ["\x1b[33m", 100], 
+        succes: ["\x1b[32m", 200],       
+        redirection: ["\x1b[36m", 300],  
+        clientsError: ["\x1b[35m", 400], 
+        serverError: ["\x1b[31m", 500], 
+    };
     let date = new Date().toISOString().split("T");
-   
-    
-    for(let color in colorStatusCodeHttp) { 
-        color = colorStatusCodeHttp[color]
-
-        if( (color[1]- status) == 0  || ( color[1] - status) < 100 ){
-            return (req)=> {
-                console.log(`%c${date[0]} - ${date[1]} ${req.url} ${status}`, `color: #${color[0]};`)
-            }
+    for (let color in colorStatusCodeHttp) {
+        const [ansi, code] = colorStatusCodeHttp[color];
+        if (Math.floor(status / 100) * 100 === code) {
+                console.log(`${ansi}${date[0]} - ${date[1]} ${req.url} ${status}\x1b[0m`);
         }
     }
-    
-}
+};
 
 
 const objectdir = exec("pwd")

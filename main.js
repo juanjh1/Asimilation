@@ -29,29 +29,14 @@ class Asimilation {
 
     #createServer() {
         return http.createServer((req, res) => {
-            let header;
+            
             try {
-                console.log(!this.#routerManager.pathInclude(req.url))
-                console.log(this.#routerManager)
-                if (!this.#routerManager.pathInclude(req.url)) {
-                    header = 404;
-                    let message = backendMessaje(header)
-                    message(req)
-                    res.writeHead(header, { 'Content-Type': 'text/plain' });
-                    res.end('Ruta no encontrada');
-                    return;
-                }
-                header = 200;
-                let message = backendMessaje(header)
-                message(req)
-                res.writeHead(header, { 'Content-Type': 'application/json' });
-                this.#routerManager.execDef(req)(res)
-
+              let statusCode = this.#routerManager.controlerHadler(req, res);
+           //backendMessaje(statusCode);
             } catch (error) {
-                header = 500;
-                let message = backendMessaje(header)
+                let header = 500;
                 res.writeHead(header, { 'Content-Type': 'text/plain' });
-                res.end('Ruta no encontrada');
+                res.end('Ocurrio un error');
             }
         })
 
