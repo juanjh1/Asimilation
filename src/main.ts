@@ -1,5 +1,5 @@
 import http from 'http';
-//import { backendMessaje } from './utils.js';
+import { backendMessaje } from './utils.js';
 import { RouteManager } from './router-manager.js';
 
 
@@ -29,12 +29,14 @@ class Asimilation {
 
     #createServer() : http.Server {
         return http.createServer((req, res) => {
+            let statusCode: number;
             try {
-                let statusCode = this.#routerManager.controlerHadler(req, res);
-                //backendMessaje(statusCode);
+                statusCode = this.#routerManager.controlerHadler(req, res);
+                backendMessaje(statusCode);
             } catch (error) {
-                let header = 500;
-                res.writeHead(header, { 'Content-Type': 'text/plain' });
+                statusCode = 500;
+                backendMessaje(statusCode);
+                res.writeHead(statusCode, { 'Content-Type': 'text/plain' });
                 res.end('Ocurrio un error');
             }
         })

@@ -1,24 +1,24 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import { MiddelwareManager } from './midelwars.js';
 
 export class RouteManager {
-  paths: Map<string|undefined, (req: IncomingMessage, res :ServerResponse)=>void>;
-
+  #paths: Map<string|undefined, (req: IncomingMessage, res :ServerResponse)=>void>;
+  #middelwares: MiddelwareManager;
   constructor() {
     // we use map/ thats works becouse each endpoint its unique
-    this.paths = new Map();
-
+    this.#paths = new Map();
+    this.#middelwares = new MiddelwareManager()
   }
 
   #pathInclude(url: string | undefined){
-    return this.paths.has(url)
+    return this.#paths.has(url)
   }
-
 
   addPath(url: string, callback: ( req: IncomingMessage, res:ServerResponse,) => void) {
     if (!/^\//.test(url)) {
       url = "/" + url
     }
-    this.paths.set(url, callback)
+    this.#paths.set(url, callback)
   }
 
   controlerHadler(req: IncomingMessage, res: ServerResponse) {
@@ -32,7 +32,7 @@ export class RouteManager {
     header = 200;
     res.writeHead(header, { 'Content-Type': 'application/json' });
  
-    const handler = this.paths.get(req.url);
+    const handler = this.#paths.get(req.url);
     if (handler) {
       handler(req, res);
     }
@@ -55,7 +55,5 @@ class RouteModule {
     this.#manager = manager;
     this.#baseNameSpace = nameSpace;
   }
-
-
 
 }

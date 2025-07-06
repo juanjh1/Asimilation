@@ -2,16 +2,6 @@ import exp from "constants"
 import { exec } from "child_process"
 
 
-type ColorStatusEntry = [string, number];
-
-type ColorStatusCodeHttp = {
-  informational: ColorStatusEntry;
-  succes: ColorStatusEntry;
-  redirection: ColorStatusEntry;
-  clientsError: ColorStatusEntry;
-  serverError: ColorStatusEntry;
-};
-
 export const backendMessaje = (status: number) => {
     const colorStatusCodeHttp: Record<"informational" | "succes" | "redirection" | "clientsError" | "serverError", [string, number]> = {
         informational: ["\x1b[33m", 100], 
@@ -29,41 +19,43 @@ export const backendMessaje = (status: number) => {
 };
 
 
-
-
 export class Stack <T> {
   #items: T[] = [];
   constructor() {
     this.#items= [];
   }
 
-  push(element: T) {
+  push(element: T): void {
     this.#items.push(element);
   }
 
-  pop() {
+  pop(): T|null|undefined {
     return this.isEmpty() ? null : this.#items.pop();
   }
 
-  peek() {
+  peek(): T{
     return this.#items[this.#items.length - 1];
   }
 
-  isEmpty() {
+  isEmpty(): boolean {
     return this.#items.length === 0;
   }
 
-  size() {
+  size(): number {
     return this.#items.length;
   }
 
-  clear() {
+  clear(): void{
     this.#items = [];
   }
 
-  toArray() {
+  toArray(): T[] {
     return [...this.#items];
   }
+
+
+
+
 }
 
 
