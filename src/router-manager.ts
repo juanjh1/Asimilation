@@ -16,9 +16,11 @@ export class RouteManager {
   }
 
   addPath(url: string, callback: ( req: IncomingMessage, res:ServerResponse,) => void) {
-    if (!/^\//.test(url)) {
+    // replace the reguex for starsWhit for best legibility
+    if (!url.startsWith("/")) {
       url = "/" + url
     }
+
     this.#paths.set(url, callback)
   }
 
@@ -34,8 +36,8 @@ export class RouteManager {
     res.writeHead(header, { 'Content-Type': 'application/json' });
  
     const handler = this.#paths.get(req.url);
-    const { req:processedReq , res: processedRes} = this.#middelwareManger.run(req, res)
     if (handler) {
+      const { req:processedReq , res: processedRes} = this.#middelwareManger.run(req, res)
       handler(processedReq, processedRes);
     }
     return header;
