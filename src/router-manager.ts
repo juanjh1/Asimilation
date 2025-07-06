@@ -1,13 +1,14 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { MiddelwareManager } from './midelwars.js';
+import { MiddelwareManagerI } from './middelware-manager-interface.js';
+import "./middelwares.js";
 
 export class RouteManager {
   #paths: Map<string|undefined, (req: IncomingMessage, res :ServerResponse)=>void>;
-  #middelwares: MiddelwareManager;
-  constructor() {
+  #middelwareManger: MiddelwareManagerI;
+  constructor(middelwareManager: MiddelwareManagerI) {
     // we use map/ thats works becouse each endpoint its unique
+    this.#middelwareManger = middelwareManager;
     this.#paths = new Map();
-    this.#middelwares = new MiddelwareManager()
   }
 
   #pathInclude(url: string | undefined){
@@ -33,8 +34,9 @@ export class RouteManager {
     res.writeHead(header, { 'Content-Type': 'application/json' });
  
     const handler = this.#paths.get(req.url);
+    const { req:processedReq , res: processedRes} = this.#middelwareManger.run(req, res)
     if (handler) {
-      handler(req, res);
+      handler(processedReq, processedRes);
     }
     return header;
   }

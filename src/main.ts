@@ -1,6 +1,8 @@
 import http from 'http';
 import { backendMessaje } from './utils.js';
 import { RouteManager } from './router-manager.js';
+import { middelwares } from './middelware-manager.js';
+import { MiddelwareManagerI } from './middelware-manager-interface.js';
 
 
 
@@ -19,11 +21,11 @@ class pathManagerAdapter{
 
 
 class Asimilation {
-    static server = new Asimilation();
+    static server = new Asimilation(middelwares);
     #routerManager: RouteManager;
     #liveServer: http.Server; 
-    constructor() {
-        this.#routerManager = new RouteManager();
+    constructor(middelwareManager: MiddelwareManagerI) {
+        this.#routerManager = new RouteManager(middelwareManager);
         this.#liveServer = this.#createServer();
     }
 
@@ -33,11 +35,16 @@ class Asimilation {
             try {
                 statusCode = this.#routerManager.controlerHadler(req, res);
                 backendMessaje(statusCode);
-            } catch (error) {
+            } catch (err) {
                 statusCode = 500;
                 backendMessaje(statusCode);
                 res.writeHead(statusCode, { 'Content-Type': 'text/plain' });
-                res.end('Ocurrio un error');
+                  if (err instanceof Error) {
+                    console.log(err.message);
+                    console.log(err.stack);   
+                }
+                res.end('Internal Server error');
+                
             }
         })
 
