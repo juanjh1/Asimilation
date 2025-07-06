@@ -1,8 +1,8 @@
 import http from 'http';
-import { backendMessaje } from './utils.js';
+import { backendMessaje } from '../utils.js';
 import { RouteManager } from './router-manager.js';
 import { middelwares } from './middelware-manager.js';
-import { MiddelwareManagerI } from './middelware-manager-interface.js';
+import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
 
 
 

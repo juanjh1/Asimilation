@@ -18,7 +18,6 @@ export const backendMessaje = (status: number) => {
     });
 };
 
-
 export class Stack <T> {
   #items: T[] = [];
   constructor() {
@@ -52,11 +51,4 @@ export class Stack <T> {
   toArray(): T[] {
     return [...this.#items];
   }
-
-
-
-
 }
-
-
-

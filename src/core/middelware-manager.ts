@@ -1,6 +1,6 @@
-import { Stack } from "./utils.js";
+import { Stack } from "../utils.js";
 import {IncomingMessage, ServerResponse} from "http"
-import { MiddelwareManagerI } from "./middelware-manager-interface.js";
+import { MiddelwareManagerI } from "../interfaces/middelware-manager.js";
 
 type middelwareFunction =  (req: IncomingMessage, res: ServerResponse, next: ()=> void) => void;
 
@@ -36,5 +36,4 @@ class MiddelwareManager implements MiddelwareManagerI{
 
 
 export const middelwares = MiddelwareManager.instance;
-
-
+export {middelwareFunction}

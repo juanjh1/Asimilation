@@ -1,4 +1,4 @@
-import { url } from "./main.js";
+import { url } from "./core/main.js";
 
 url.addPath("", (req, res) => {
     res.end(JSON.stringify({ message: "Hola mi bb" }));

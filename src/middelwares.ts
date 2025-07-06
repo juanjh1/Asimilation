@@ -1,4 +1,4 @@
-import { middelwares } from "./middelware-manager.js";
+import { middelwares } from "./core/middelware-manager.js";
 
 middelwares.addMiddelware(
     (req, res, next) => {

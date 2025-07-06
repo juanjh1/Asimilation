@@ -1,6 +1,8 @@
-import { IncomingMessage, ServerResponse } from 'http';
-import { MiddelwareManagerI } from './middelware-manager-interface.js';
-import "./middelwares.js";
+import { IncomingMessage, ServerResponse, METHODS } from 'http';
+import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
+import { middelwareFunction } from './middelware-manager.js';
+import "../middelwares.js";
+
 
 export class RouteManager {
   #paths: Map<string|undefined, (req: IncomingMessage, res :ServerResponse)=>void>;
@@ -15,7 +17,7 @@ export class RouteManager {
     return this.#paths.has(url)
   }
 
-  addPath(url: string, callback: ( req: IncomingMessage, res:ServerResponse,) => void) {
+  addPath(url: string, callback: ( req: IncomingMessage, res:ServerResponse, kwargs?:{methods?: string[], handlers: middelwareFunction  }) => void) {
     // replace the reguex for starsWhit for best legibility
     if (!url.startsWith("/")) {
       url = "/" + url

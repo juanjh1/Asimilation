@@ -1,4 +1,4 @@
-import { server } from "./main.js";
+import { server } from "./core/main.js";
 import "./urls.js";
 
 const port = 3000

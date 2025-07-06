@@ -22,16 +22,21 @@ C:.
 │   readme.md
 │   tsconfig.json
 │
-│
 └───src
-        main.ts
-        middelware-manager-interface.ts
-        middelware-manager.ts
-        middelwares.ts
-        router-manager.ts
-        run.ts
-        urls.ts
-        utils.ts
+    │   middelwares.ts
+    │   run.ts
+    │   urls.ts
+    │   utils.ts
+    │   views.js
+    │
+    ├───core
+    │       main.ts
+    │       middelware-manager.ts
+    │       router-manager.ts
+    │
+    └───interfaces
+            middelware-manager.ts
+
 ```
 ## 🚀 Getting Started
 1. **Install Node.js** (v18+ recommended)
