@@ -15,7 +15,7 @@
 - **Educational Purpose:** Code is commented and organized for learning and future expansion.
 
 ## 📁 Project Structure
-
+```
 C:.
 │   .gitignore
 │   package.json
@@ -32,7 +32,7 @@ C:.
         run.ts
         urls.ts
         utils.ts
-
+```
 ## 🚀 Getting Started
 1. **Install Node.js** (v18+ recommended)
 2. Clone this repository
@@ -40,3 +40,18 @@ C:.
    ```bash
    npx tsx run.ts
    ```
+Open http://localhost:3000 in your browser
+
+⚙️ How It Works
+Routes and views are defined in paths.ts and views.ts
+
+The server listens for HTTP requests and matches the URL to a registered route
+
+If a match is found, the associated view function is executed
+
+Middleware functions are processed in order before the view
+
+Requests and responses are logged with color-coded status codes for clarity
+
+❓ Why Asimilation?
+This project is a living record of my backend learning journey, as I "assimilate" new concepts and best practices. It’s designed to be simple, hackable, and a foundation for future backend experiments.
