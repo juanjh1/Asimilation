@@ -1,8 +1,19 @@
 import exp from "constants"
 import { exec } from "child_process"
 
-export const backendMessaje = (status) => {
-    const colorStatusCodeHttp = {
+
+type ColorStatusEntry = [string, number];
+
+type ColorStatusCodeHttp = {
+  informational: ColorStatusEntry;
+  succes: ColorStatusEntry;
+  redirection: ColorStatusEntry;
+  clientsError: ColorStatusEntry;
+  serverError: ColorStatusEntry;
+};
+
+export const backendMessaje = (status: number) => {
+    const colorStatusCodeHttp: Record<"informational" | "succes" | "redirection" | "clientsError" | "serverError", [string, number]> = {
         informational: ["\x1b[33m", 100], 
         succes: ["\x1b[32m", 200],       
         redirection: ["\x1b[36m", 300],  
@@ -10,29 +21,23 @@ export const backendMessaje = (status) => {
         serverError: ["\x1b[31m", 500], 
     };
     let date = new Date().toISOString().split("T");
-    for (let color in colorStatusCodeHttp) {
-        const [ansi, code] = colorStatusCodeHttp[color];
+    (Object.entries(colorStatusCodeHttp) as [string, [string, number]][]).forEach(([color, [ansi, code]]) => {
         if (Math.floor(status / 100) * 100 === code) {
-                console.log(`${ansi}${date[0]} - ${date[1]} ${req.url} ${status}\x1b[0m`);
+                console.log(`${ansi}${date[0]} - ${date[1]} ${status}\x1b[0m`);
         }
-    }
+    });
 };
 
 
-const objectdir = exec("pwd")
-
-objectdir.stdout.on('data', (data) => { 
-    console.log(`stdout: ${data}`); 
-});
 
 
-export class Stack {
-  #items;
+export class Stack <T> {
+  #items: T[] = [];
   constructor() {
-    this.#items = [];
+    this.#items= [];
   }
 
-  push(element) {
+  push(element: T) {
     this.#items.push(element);
   }
 
@@ -60,3 +65,6 @@ export class Stack {
     return [...this.#items];
   }
 }
+
+
+

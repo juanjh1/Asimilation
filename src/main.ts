@@ -1,33 +1,33 @@
 import http from 'http';
-import { backendMessaje } from './utils.js';
+//import { backendMessaje } from './utils.js';
 import { RouteManager } from './router-manager.js';
 
 
 
-class UrlManager{
-    #urlManager;
-    constructor(pathManager){
-        this.#urlManager = pathManager
+class pathManagerAdapter{
+    #pathManager: RouteManager ;
+    constructor(pathManager: RouteManager){
+        this.#pathManager = pathManager
     }
-    addPath(name, def){
-        this.#urlManager.addPath(name, def);
+       addPath(name: string, callback: (req: any, res: any) => void) {
+        this.#pathManager.addPath(name, callback);
     }
-    createRouteModule(name){
-        this.#urlManager.createRouteModule(name);
+    createRouteModule(name: string){
+        this.#pathManager.createRouteModule(name);
     }
 }
 
 
 class Asimilation {
     static server = new Asimilation();
-    #routerManager;
-    #liveServer;
+    #routerManager: RouteManager;
+    #liveServer: http.Server; 
     constructor() {
         this.#routerManager = new RouteManager();
         this.#liveServer = this.#createServer();
     }
 
-    #createServer() {
+    #createServer() : http.Server {
         return http.createServer((req, res) => {
             try {
                 let statusCode = this.#routerManager.controlerHadler(req, res);
@@ -41,7 +41,7 @@ class Asimilation {
 
     }
 
-    listen(port) {
+    listen(port:number) {
         this.#liveServer.listen(port, () => {
             console.log(`Servidor corriendo en http://localhost:${port}`);
         });
@@ -49,7 +49,7 @@ class Asimilation {
 
 
     urlManager(){
-        return new UrlManager(this.#routerManager);
+        return new pathManagerAdapter(this.#routerManager);
     }
 
 }

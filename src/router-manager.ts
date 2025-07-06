@@ -1,25 +1,27 @@
+import { IncomingMessage, ServerResponse } from 'http';
+
 export class RouteManager {
+  paths: Map<string|undefined, (req: IncomingMessage, res :ServerResponse)=>void>;
+
   constructor() {
     // we use map/ thats works becouse each endpoint its unique
     this.paths = new Map();
 
   }
 
-  #pathInclude(url){
+  #pathInclude(url: string | undefined){
     return this.paths.has(url)
   }
 
-  validatePath(path) {
 
-  }
-  addPath(url, def) {
+  addPath(url: string, callback: ( req: IncomingMessage, res:ServerResponse,) => void) {
     if (!/^\//.test(url)) {
       url = "/" + url
     }
-    this.paths.set(url, { "url": url, "view": def })
+    this.paths.set(url, callback)
   }
 
-  controlerHadler(req, res) {
+  controlerHadler(req: IncomingMessage, res: ServerResponse) {
     let header;
     if (!this.#pathInclude(req.url)) {
       header = 404;
@@ -29,12 +31,16 @@ export class RouteManager {
     }
     header = 200;
     res.writeHead(header, { 'Content-Type': 'application/json' });
-    this.paths.get(req.url).view(req, res)
+ 
+    const handler = this.paths.get(req.url);
+    if (handler) {
+      handler(req, res);
+    }
     return header;
   }
 
 
-  createRouteModule(name) {
+  createRouteModule(name: string) {
     return new RouteModule(this, name)
   }
 
@@ -43,9 +49,9 @@ export class RouteManager {
 
 
 class RouteModule {
-  #manager;
-  #baseNameSpace;
-  constructor(manager, nameSpace) {
+  #manager: RouteManager;
+  #baseNameSpace: string;
+  constructor(manager: RouteManager, nameSpace: string) {
     this.#manager = manager;
     this.#baseNameSpace = nameSpace;
   }
