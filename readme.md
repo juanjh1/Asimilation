@@ -36,7 +36,6 @@ C:.
     │
     └───interfaces
             middelware-manager.ts
-
 ```
 ## 🚀 Getting Started
 1. **Install Node.js** (v18+ recommended)
