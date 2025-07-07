@@ -10,8 +10,9 @@ middelwares.addMiddelware(
 
 middelwares.addMiddelware(
     (req, res, next) => {
+        next()
         console.log("Hola soy el middelware 2")
-         next()
+     
     }
 )
 
@@ -19,6 +20,7 @@ middelwares.addMiddelware(
 middelwares.addMiddelware(
     (req, res, next) => {
         console.log("Hola soy el middelware 3")
-         next()
+        next()
+     
     }
 )

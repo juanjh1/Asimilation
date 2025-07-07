@@ -1,5 +1,4 @@
 import http from 'http';
-import { backendMessaje } from '../utils.js';
 import { RouteManager } from './router-manager.js';
 import { middelwares } from './middelware-manager.js';
 import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
@@ -31,20 +30,15 @@ class Asimilation {
 
     #createServer() : http.Server {
         return http.createServer((req, res) => {
-            let statusCode: number;
             try {
-                statusCode = this.#routerManager.controlerHadler(req, res);
-                backendMessaje(statusCode);
+                this.#routerManager.controlerHadler(req, res);
             } catch (err) {
-                statusCode = 500;
-                backendMessaje(statusCode);
-                res.writeHead(statusCode, { 'Content-Type': 'text/plain' });
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
                   if (err instanceof Error) {
                     console.log(err.message);
                     console.log(err.stack);   
                 }
                 res.end('Internal Server error');
-                
             }
         })
 
