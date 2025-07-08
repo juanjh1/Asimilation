@@ -1,4 +1,4 @@
-import { middelwares } from "./core/middelware-manager.js";
+import { middelwares } from "./core/middleware-manager.js";
 
 middelwares.addMiddelware(
     (req, res, next) => {
@@ -10,9 +10,8 @@ middelwares.addMiddelware(
 
 middelwares.addMiddelware(
     (req, res, next) => {
-        next()
         console.log("Hola soy el middelware 2")
-     
+         next()
     }
 )
 
@@ -20,7 +19,6 @@ middelwares.addMiddelware(
 middelwares.addMiddelware(
     (req, res, next) => {
         console.log("Hola soy el middelware 3")
-        next()
-     
+         next()
     }
 )

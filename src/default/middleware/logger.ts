@@ -1,4 +1,4 @@
-import { middelwares } from "../../core/middelware-manager.js";
+import { middelwares } from "../../core/middleware-manager.js";
 import { createLogger } from "../../utils/logger.js";
 
 middelwares.addMiddelware(
@@ -11,8 +11,7 @@ middelwares.addMiddelware(
                 createLogger(statusCode, method, url)  
                 next()
                 return;
-            }
-            
+            }  
             throw new Error("")
             
         })

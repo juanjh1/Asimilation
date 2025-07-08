@@ -3,8 +3,8 @@ import { MiddelwareManagerI } from "../interfaces/middelware-manager.js";
 import { middelwareFunction } from "./type.js";
 
 
-class MiddelwareManager implements MiddelwareManagerI{
-    static instance: MiddelwareManager = MiddelwareManager.getInstance();
+class MiddlewareManager implements MiddelwareManagerI{
+    static instance: MiddlewareManager = MiddlewareManager.getInstance();
     #middelwares: middelwareFunction [];
     constructor(){
         this.#middelwares  = []
@@ -26,12 +26,11 @@ class MiddelwareManager implements MiddelwareManagerI{
      
     }
 
-    static getInstance(): MiddelwareManager{
-        return new MiddelwareManager();
+    static getInstance(): MiddlewareManager{
+        return new MiddlewareManager();
     }
 
 }
 
 
-export const middelwares = MiddelwareManager.instance;
-export {middelwareFunction}
+export const middelwares = MiddlewareManager.instance;

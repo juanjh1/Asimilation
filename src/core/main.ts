@@ -1,9 +1,9 @@
 import http from 'http';
 import { RouteManager } from './router-manager.js';
-import { middelwares } from './middelware-manager.js';
+import { middelwares } from './middleware-manager.js';
 import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
 
-
+ 
 
 class pathManagerAdapter{
     #pathManager: RouteManager ;
@@ -30,6 +30,7 @@ class Asimilation {
 
     #createServer() : http.Server {
         return http.createServer((req, res) => {
+
             try {
                 this.#routerManager.controlerHadler(req, res);
             } catch (err) {

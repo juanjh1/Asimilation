@@ -1,32 +1,46 @@
 import { IncomingMessage, ServerResponse, METHODS } from 'http';
 import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
-import { middelwareFunction } from './middelware-manager.js';
-import "../middelwares.js";
-import "../default/middelware/logger.js";
+import { middelwareFunction, pathKwargs } from './type.js';
+import { controller,  } from './type.js';
+import "../middlewares.js";
+import "../default/middleware/logger.js";
 
 export class RouteManager {
-  #paths: Map<string | undefined, Map<string, (req: IncomingMessage, res: ServerResponse) => void>>;
+
+  // 
+  #paths: Map<string | undefined, Map<string, controller>>;
+  #middelwaresByPath: Map<string, middelwareFunction []>;
   #middelwareManger: MiddelwareManagerI;
+
   constructor(middelwareManager: MiddelwareManagerI) {
     // we use map/ thats works becouse each endpoint its unique
     this.#middelwareManger = middelwareManager;
     this.#paths = new Map();
+    this.#middelwaresByPath = new Map();
+    
   }
 
   #pathInclude(url: string | undefined) {
     return this.#paths.has(url);
   }
 
+
+
+  #validateMethod(method: string){
+      if (!METHODS.includes(method)) {
+        throw new Error("The method is not suported");
+      }
+  }
+
+
   addPath(url: string,
-    callback: (req: IncomingMessage, res: ServerResponse) => void,
-    kwargs?: { methods?: string[], handlers?: middelwareFunction[] }) {
+    callback: controller,
+    kwargs?: pathKwargs) {
 
     // replace the reguex for starsWhit for best (or major my english is still broken) legibility
-    if (!url.startsWith("/")) {
-      url = "/" + url;
-    }
+    url = this.validatePath(url)
 
-    let methodsMap: Map<string, (req: IncomingMessage, res: ServerResponse) => void> = new Map()
+    let methodsMap: Map<string, controller> = new Map()
     this.#paths.set(url, methodsMap)
     if (!kwargs || !kwargs.methods) {
       METHODS.forEach((metod: string) => {
@@ -39,15 +53,20 @@ export class RouteManager {
 
     incomngMethods.forEach((method: string) => {
       method = method.toLocaleUpperCase();
-
-      if (!METHODS.includes(method)) {
-        throw new Error("The method is not suported");
-      }
-
+      this.#validateMethod(method);
       methodsMap.set(method, callback);
-
     });
+
   }
+
+  validatePath(nameSpace: string) : string{
+    if(!nameSpace.startsWith("/")){
+      nameSpace = "/" +  nameSpace
+    }
+    nameSpace = nameSpace.replace(/\/+/g, "/");
+    return nameSpace
+  }
+
 
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
     let header;
@@ -58,9 +77,9 @@ export class RouteManager {
       req.statusCode = header;
       return;
     }
-    header = 200;
-    res.writeHead(header, { 'Content-Type': 'application/json' });
-
+  
+    //header = 200;
+    //res.writeHead(header, { 'Content-Type': 'application/json' });
     const handler = this.#paths.get(req.url);
     if (!handler) { throw new Error("The path is not working properly") }
     let method = req.method
@@ -82,7 +101,7 @@ export class RouteManager {
 
     const { req: processedReq, res: processedRes } = this.#middelwareManger.run(req, res);
 
-    let callback: ((req: IncomingMessage, res: ServerResponse) => void) | undefined = handler.get(method);
+    let callback: (controller) | undefined = handler.get(method);
 
     if (!callback) {
       header = 500;
@@ -102,7 +121,11 @@ export class RouteManager {
     return new RouteModule(this, name)
   }
 
+  
+
 }
+
+
 
 
 class RouteModule {
@@ -111,8 +134,17 @@ class RouteModule {
 
   constructor(manager: RouteManager, nameSpace: string) {
     this.#manager = manager;
-    this.#baseNameSpace = nameSpace;
+    this.#baseNameSpace = this.#manager.validatePath(nameSpace);
   }
 
+
+  addPath(path: string, callback: controller, kwargs?: pathKwargs){
+     path = this.#baseNameSpace + this.#manager.validatePath(path)
+     this.#manager.addPath(path, callback, kwargs)
+  }
+
+    createRouteModule(name: string) {
+    return new RouteModule(this.#manager, (this.#baseNameSpace + this.#manager.validatePath(name)))
+  }
 
 }
