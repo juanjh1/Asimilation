@@ -1,8 +1,8 @@
 import http from 'http';
-import { RouteManager } from './router-manager.js';
+import { RouteManager, RouteModule } from './router-manager.js';
 import { middelwares } from './middleware-manager.js';
 import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
-
+import { pathKwargs} from './type.js';
  
 
 class pathManagerAdapter{
@@ -10,11 +10,11 @@ class pathManagerAdapter{
     constructor(pathManager: RouteManager){
         this.#pathManager = pathManager
     }
-       addPath(name: string, callback: (req: any, res: any) => void) {
-        this.#pathManager.addPath(name, callback);
+       addPath(name: string, callback: (req: any, res: any) => void, kwargs?: pathKwargs) {
+        this.#pathManager.addPath(name, callback, kwargs);
     }
-    createRouteModule(name: string){
-        this.#pathManager.createRouteModule(name);
+    createRouteModule(name: string):RouteModule {
+       return this.#pathManager.createRouteModule(name);
     }
 }
 

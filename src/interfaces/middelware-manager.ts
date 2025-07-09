@@ -5,4 +5,5 @@ export interface MiddelwareManagerI {
         req: IncomingMessage,
         res: ServerResponse
     ): { req: IncomingMessage; res: ServerResponse };
+    
 }

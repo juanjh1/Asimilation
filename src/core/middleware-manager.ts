@@ -13,18 +13,36 @@ class MiddlewareManager implements MiddelwareManagerI{
     addMiddelware(middelware: middelwareFunction){
         this.#middelwares.push(middelware)
     } 
-    run(req: IncomingMessage, res: ServerResponse) :  {req: IncomingMessage, res: ServerResponse}{
-        const dispach = (index: number): void => {
-               if( this.#middelwares.length == 0){ return }
-                let current = this.#middelwares[index]
+
+    
+    #runer(middelwareList: middelwareFunction [], req: IncomingMessage, res: ServerResponse){
+
+         const dispach = (index: number): void => {
+               if( middelwareList.length == 0){ return }
+                let current = middelwareList[index]
                 if(current){
                     current(req, res, ()=>{dispach(index+1)})
                 }     
         }
         dispach(0);
-        return {req, res}
-     
     }
+
+
+    run(req: IncomingMessage, res: ServerResponse) :  {req: IncomingMessage, res: ServerResponse}{
+        this.#runer(this.#middelwares, req, res)
+        return {req, res}
+    }
+
+    
+
+
+    runRouteMiddlewares(req: IncomingMessage, res: ServerResponse, middelwareList: middelwareFunction []): {req: IncomingMessage, res: ServerResponse}
+    {
+         this.#runer(middelwareList, req, res)
+        return {req, res}
+    }
+
+
 
     static getInstance(): MiddlewareManager{
         return new MiddlewareManager();

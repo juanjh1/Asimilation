@@ -39,9 +39,9 @@ export class RouteManager {
     kwargs?: pathKwargs) {
 
     // replace the reguex for starsWhit for best (or major my english is still broken) legibility
-    url = this.validatePath(url)
+    url = this.parsePath(url)
 
-    let methodsMap: routeMap= new Map()
+    let methodsMap: routeMap = new Map()
     this.#paths.set(url, methodsMap)
     if (!kwargs || !kwargs.methods) {
       METHODS.forEach((metod: string) => {
@@ -58,9 +58,15 @@ export class RouteManager {
       methodsMap.set(method, callback);
     });
 
+
+    let middlewares: middelwareFunction [] | undefined= kwargs.handlers
+    if(middlewares){
+      this.#middelwaresByPath.set(url, middlewares)
+    }
   }
 
-  validatePath(nameSpace: string) : string{
+
+  parsePath(nameSpace: string) : string{
     if(!nameSpace.startsWith("/")){
       nameSpace = "/" +  nameSpace
     }
@@ -72,7 +78,7 @@ export class RouteManager {
  // dont delete req, remenber its for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
       let code = 404
-      req.statusCode = code
+      req.statusCode = code;
       sendTextMessaje(res, "path not found", code)
   }
 
@@ -102,7 +108,11 @@ export class RouteManager {
 
     return callback
   }
+
+
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
+    
+    const { req: processedReq, res: processedRes } = this.#middelwareManger.run(req, res);
 
     if (!this.#pathInclude(req.url)) {
       this.#handleNotFound(req, res);
@@ -122,12 +132,8 @@ export class RouteManager {
       return;
     }
 
-    const { req: processedReq, res: processedRes } = this.#middelwareManger.run(req, res);
+    let callback: controller  = this.#assertCallback(req, res,handler.get(method)) ; 
 
-    let callback: controller  = this.#assertCallback(req, res,handler.get(method)) ;
-
-
-    
 
     callback(processedReq, processedRes);
 
@@ -135,30 +141,30 @@ export class RouteManager {
 
   }
 
-  createRouteModule(name: string) {
-    return new RouteModule(this, name)
+  createRouteModule(initialPaht: string) {
+    return new RouteModule(this, initialPaht)
   }
 }
 
 
 
-class RouteModule {
+export class RouteModule {
   #manager: RouteManager;
-  #baseNameSpace: string;
+  #initialPath: string;
 
   constructor(manager: RouteManager, nameSpace: string) {
     this.#manager = manager;
-    this.#baseNameSpace = this.#manager.validatePath(nameSpace);
+    this.#initialPath = this.#manager.parsePath(nameSpace);
   }
 
 
   addPath(path: string, callback: controller, kwargs?: pathKwargs){
-     path = this.#baseNameSpace + this.#manager.validatePath(path)
+     path = this.#initialPath + this.#manager.parsePath(path)
      this.#manager.addPath(path, callback, kwargs)
   }
 
     createRouteModule(name: string) {
-    return new RouteModule(this.#manager, (this.#baseNameSpace + this.#manager.validatePath(name)))
+    return new RouteModule(this.#manager, (this.#initialPath + this.#manager.parsePath(name)))
   }
 
 }

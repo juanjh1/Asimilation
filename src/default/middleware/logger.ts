@@ -7,13 +7,14 @@ middelwares.addMiddelware(
             let statusCode: number | undefined = req.statusCode
             let method : string | undefined = req.method
             let url : string | undefined =  req.url
+
             if(statusCode && method && url){
                 createLogger(statusCode, method, url)  
                 next()
                 return;
             }  
-            throw new Error("")
-            
+
+            throw new Error("Error in the logger")
         })
     }
 )
