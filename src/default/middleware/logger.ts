@@ -1,7 +1,7 @@
-import { middelwares } from "../../core/middleware-manager.js";
+import { MiddlewarePipeline } from "../../core/middleware-manager.js";
 import { createLogger } from "../../utils/logger.js";
 
-middelwares.addMiddelware(
+MiddlewarePipeline.addMiddleware(
     (req, res, next) =>{
         req.on("end", ()=>{
             let statusCode: number | undefined = req.statusCode

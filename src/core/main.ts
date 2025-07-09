@@ -1,7 +1,7 @@
 import http from 'http';
 import { RouteManager, RouteModule } from './router-manager.js';
-import { middelwares } from './middleware-manager.js';
-import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
+import { MiddlewarePipeline } from './middleware-manager.js';
+import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
 import { pathKwargs} from './type.js';
  
 
@@ -20,10 +20,10 @@ class pathManagerAdapter{
 
 
 class Asimilation {
-    static server = new Asimilation(middelwares);
+    static server = new Asimilation(MiddlewarePipeline);
     #routerManager: RouteManager;
     #liveServer: http.Server; 
-    constructor(middelwareManager: MiddelwareManagerI) {
+    constructor(middelwareManager: MiddlewareManagerI) {
         this.#routerManager = new RouteManager(middelwareManager);
         this.#liveServer = this.#createServer();
     }

@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse, METHODS } from 'http';
-import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
-import { middelwareFunction, pathKwargs ,ControllerRegistry, routeMiddlewares, routeMap} from './type.js';
-import { sendTextMessaje } from '../utils/http-responses.js';
+import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
+import { middlewareFunction, pathKwargs ,ControllerRegistry, routeMiddlewares, routeMap} from './type.js';
+import { sendTextMessage } from '../utils/http-responses.js';
 import { controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
@@ -10,21 +10,20 @@ export class RouteManager {
 
   // 
   #paths: ControllerRegistry ;
-  #middelwaresByPath: routeMiddlewares;
-  #middelwareManger: MiddelwareManagerI;
+  #middlewaresByPath: routeMiddlewares;
+  #middlewareManger: MiddlewareManagerI;
 
-  constructor(middelwareManager: MiddelwareManagerI) {
+  constructor(middlewareManager: MiddlewareManagerI) {
     // we use map/ thats works becouse each endpoint its unique
-    this.#middelwareManger = middelwareManager;
+    this.#middlewareManger = middlewareManager;
     this.#paths = new Map();
-    this.#middelwaresByPath = new Map();
+    this.#middlewaresByPath = new Map();
     
   }
 
-  #pathInclude(url: string | undefined): boolean {
+  #pathInclude(url: string): boolean {
     return this.#paths.has(url);
   }
-
 
 
   #validateMethod(method: string):void{
@@ -58,11 +57,15 @@ export class RouteManager {
       methodsMap.set(method, callback);
     });
 
+    let middlewares: middlewareFunction [] | undefined= kwargs.handlers
 
-    let middlewares: middelwareFunction [] | undefined= kwargs.handlers
-    if(middlewares){
-      this.#middelwaresByPath.set(url, middlewares)
+    console.log(middlewares, url)
+
+    if(!middlewares){
+      this.#middlewaresByPath.set(url, [])
+      return
     }
+    this.#middlewaresByPath.set(url, middlewares)
   }
 
 
@@ -79,7 +82,7 @@ export class RouteManager {
   #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
       let code = 404
       req.statusCode = code;
-      sendTextMessaje(res, "path not found", code)
+      sendTextMessage(res, "path not found", code)
   }
 
   #assertHandler(path: routeMap | undefined ):routeMap{
@@ -93,7 +96,7 @@ export class RouteManager {
   #assertMethod(req: IncomingMessage, res: ServerResponse) : void{
     let code = 400;
     req.statusCode = code;
-    sendTextMessaje(res, "Your reques comming whiout a method", code)
+    sendTextMessage(res, "Your reques comming whiout a method", code)
   
   }
 
@@ -101,7 +104,7 @@ export class RouteManager {
   #assertCallback(req: IncomingMessage, res: ServerResponse, callback : undefined | controller) : controller{
     let code = 500;
     if(callback === undefined){
-      sendTextMessaje(res, "Internal server error", code )
+      sendTextMessage(res, "Internal server error", code )
       req.statusCode = code;
       throw new Error("Callback can't be Undefined ")
     }
@@ -109,22 +112,28 @@ export class RouteManager {
     return callback
   }
 
-
+  
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
     
-    const { req: processedReq, res: processedRes } = this.#middelwareManger.run(req, res);
+    let  { req: processedReq, res: processedRes } = this.#middlewareManger.run(req, res);
 
-    if (!this.#pathInclude(req.url)) {
+    let url: string | undefined =   req.url
+
+    if(!url){return;}
+
+    if (!this.#pathInclude(url)) {
       this.#handleNotFound(req, res);
       return;
     }  
+
+    let handler: routeMap;
     
-    let handler: routeMap  = this.#assertHandler(this.#paths.get(req.url));
+    handler = this.#assertHandler(this.#paths.get(url));
 
     let method: string | undefined  = req.method
     if (!method) {
       this.#assertMethod(req, res)
-      return;
+      return; 
     }
 
     if (!handler.has(method)) {
@@ -132,8 +141,18 @@ export class RouteManager {
       return;
     }
 
-    let callback: controller  = this.#assertCallback(req, res,handler.get(method)) ; 
+    let callback: controller  = this.#assertCallback(req, res,handler.get(method));
+    
+    
+    let callbacks: middlewareFunction[] | undefined = this.#middlewaresByPath.get(url)
+  
+    console.log(callbacks)
 
+    // if(!callbacks){
+    //   return;
+    // }
+
+    // let  { req: processedReqByF, res: processedResF } = this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
     callback(processedReq, processedRes);
 
@@ -141,8 +160,8 @@ export class RouteManager {
 
   }
 
-  createRouteModule(initialPaht: string) {
-    return new RouteModule(this, initialPaht)
+  createRouteModule(initialPath: string) {
+    return new RouteModule(this, initialPath)
   }
 }
 
