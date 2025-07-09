@@ -1,15 +1,16 @@
 import { IncomingMessage, ServerResponse, METHODS } from 'http';
 import { MiddelwareManagerI } from '../interfaces/middelware-manager.js';
-import { middelwareFunction, pathKwargs } from './type.js';
-import { controller,  } from './type.js';
+import { middelwareFunction, pathKwargs ,ControllerRegistry, routeMiddlewares, routeMap} from './type.js';
+import { sendTextMessaje } from '../utils/http-responses.js';
+import { controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
 
 export class RouteManager {
 
   // 
-  #paths: Map<string | undefined, Map<string, controller>>;
-  #middelwaresByPath: Map<string, middelwareFunction []>;
+  #paths: ControllerRegistry ;
+  #middelwaresByPath: routeMiddlewares;
   #middelwareManger: MiddelwareManagerI;
 
   constructor(middelwareManager: MiddelwareManagerI) {
@@ -20,13 +21,13 @@ export class RouteManager {
     
   }
 
-  #pathInclude(url: string | undefined) {
+  #pathInclude(url: string | undefined): boolean {
     return this.#paths.has(url);
   }
 
 
 
-  #validateMethod(method: string){
+  #validateMethod(method: string):void{
       if (!METHODS.includes(method)) {
         throw new Error("The method is not suported");
       }
@@ -40,7 +41,7 @@ export class RouteManager {
     // replace the reguex for starsWhit for best (or major my english is still broken) legibility
     url = this.validatePath(url)
 
-    let methodsMap: Map<string, controller> = new Map()
+    let methodsMap: routeMap= new Map()
     this.#paths.set(url, methodsMap)
     if (!kwargs || !kwargs.methods) {
       METHODS.forEach((metod: string) => {
@@ -67,64 +68,77 @@ export class RouteManager {
     return nameSpace
   }
 
+ // i need fix that because i has a bigg problem indetify the acceptance 
+ // dont delete req, remenber its for the acceptance 
+  #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
+      let code = 404
+      req.statusCode = code
+      sendTextMessaje(res, "path not found", code)
+  }
 
-  controlerHadler(req: IncomingMessage, res: ServerResponse): void {
-    let header;
-    if (!this.#pathInclude(req.url)) {
-      header = 404
-      res.writeHead(header, { 'Content-Type': 'text/plain' });
-      res.end("Path don't find");
-      req.statusCode = header;
-      return;
+  #assertHandler(path: routeMap | undefined ):routeMap{
+    if(path === undefined){
+      throw new Error("The path is not working properly")
     }
+    return  path
+  }
+
+
+  #assertMethod(req: IncomingMessage, res: ServerResponse) : void{
+    let code = 400;
+    req.statusCode = code;
+    sendTextMessaje(res, "Your reques comming whiout a method", code)
   
-    //header = 200;
-    //res.writeHead(header, { 'Content-Type': 'application/json' });
-    const handler = this.#paths.get(req.url);
-    if (!handler) { throw new Error("The path is not working properly") }
-    let method = req.method
+  }
+
+
+  #assertCallback(req: IncomingMessage, res: ServerResponse, callback : undefined | controller) : controller{
+    let code = 500;
+    if(callback === undefined){
+      sendTextMessaje(res, "Internal server error", code )
+      req.statusCode = code;
+      throw new Error("Callback can't be Undefined ")
+    }
+
+    return callback
+  }
+  controlerHadler(req: IncomingMessage, res: ServerResponse): void {
+
+    if (!this.#pathInclude(req.url)) {
+      this.#handleNotFound(req, res);
+      return;
+    }  
+    
+    let handler: routeMap  = this.#assertHandler(this.#paths.get(req.url));
+
+    let method: string | undefined  = req.method
     if (!method) {
-      header = 400;
-      res.writeHead(header, { 'Content-Type': 'text/plain' });
-      res.end('Your reques comming whiout a method');
-      req.statusCode = header;
+      this.#assertMethod(req, res)
       return;
     }
 
     if (!handler.has(method)) {
-      header = 404;
-      res.writeHead(header, { 'Content-Type': 'text/plain' });
-      res.end("Path don't find");
-      req.statusCode = header;
+      this.#handleNotFound(req, res)
       return;
     }
 
     const { req: processedReq, res: processedRes } = this.#middelwareManger.run(req, res);
 
-    let callback: (controller) | undefined = handler.get(method);
+    let callback: controller  = this.#assertCallback(req, res,handler.get(method)) ;
 
-    if (!callback) {
-      header = 500;
-      res.writeHead(header, { 'Content-Type': 'text/plain' });
-      res.end("Internal server error");
-      req.statusCode = header;
-      throw new Error("Callback can't be Undefined ")
-    }
+
+    
 
     callback(processedReq, processedRes);
 
-    req.statusCode = header;
+    req.statusCode = 200;
 
   }
 
   createRouteModule(name: string) {
     return new RouteModule(this, name)
   }
-
-  
-
 }
-
 
 
 

@@ -21,9 +21,9 @@ C:.
 │   package.json
 │   readme.md
 │   tsconfig.json
-│
+│   
 └───src
-    │   middelwares.ts
+    │   middlewares.ts
     │   run.ts
     │   urls.ts
     │   utils.ts
@@ -31,11 +31,28 @@ C:.
     │
     ├───core
     │       main.ts
-    │       middelware-manager.ts
+    │       middleware-manager.ts
     │       router-manager.ts
+    │       type.ts
     │
-    └───interfaces
-            middelware-manager.ts
+    ├───default
+    │   ├───middleware
+    │   │       logger.ts
+    │   │
+    │   ├───path
+    │   └───template
+    │       └───error
+    │               404.html
+    │
+    ├───interfaces
+    │       middelware-manager.ts
+    │
+    └───utils
+        │   files.ts
+        │   http-responses.ts
+        │   logger.ts
+        │
+        └───datastrucures
 ```
 ## 🚀 Getting Started
 1. **Install Node.js** (v18+ recommended)

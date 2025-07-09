@@ -6,4 +6,10 @@ type controller = (req: IncomingMessage, res: ServerResponse) => void;
 
 type pathKwargs = { methods?: string[], handlers?: middelwareFunction[] };
 
-export {middelwareFunction, controller, pathKwargs}
+type ControllerRegistry = Map<string | undefined, Map<string, controller>>;
+
+type routeMiddlewares = Map<string, middelwareFunction []>;
+
+type routeMap = Map<string, controller>;
+
+export {middelwareFunction, controller, pathKwargs, ControllerRegistry , routeMiddlewares, routeMap }
