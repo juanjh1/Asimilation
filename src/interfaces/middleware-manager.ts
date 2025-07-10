@@ -5,9 +5,9 @@ export interface MiddlewareManagerI {
     run(
         req: IncomingMessage,
         res: ServerResponse
-    ): { req: IncomingMessage; res: ServerResponse };
+    ):void;
     
     runRouteMiddlewares (req: IncomingMessage, 
                          res: ServerResponse, 
-                         middelwareList: middlewareFunction []): {req: IncomingMessage, res: ServerResponse}
+                         middelwareList: middlewareFunction []): void
 }

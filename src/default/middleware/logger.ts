@@ -4,7 +4,7 @@ import { createLogger } from "../../utils/logger.js";
 MiddlewarePipeline.addMiddleware(
     (req, res, next) =>{
         req.on("end", ()=>{
-            let statusCode: number | undefined = req.statusCode
+            let statusCode: number | undefined = res.statusCode
             let method : string | undefined = req.method
             let url : string | undefined =  req.url
 

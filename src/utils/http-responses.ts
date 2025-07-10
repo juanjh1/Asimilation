@@ -6,13 +6,13 @@ function sendResponse(res: ServerResponse , data: any,  options:{code:number, co
     res.end(data);
 }
 
-export function sendJsonMessaje(res: ServerResponse, json: Object, code: number) {
+export function sendJsonMessage(res: ServerResponse, json: Object, code: number) {
     const messaje: string = JSON.stringify(json);
     sendResponse(res,messaje, {code, contentType: 'application/json'  } )
 }
 
 
-export function sendTextMessaje(res: ServerResponse, text: string, code: number) {
+export function sendTextMessage(res: ServerResponse, text: string, code: number) {
  
     sendResponse(res,text, {code, contentType: 'text/plain'  } )
 }

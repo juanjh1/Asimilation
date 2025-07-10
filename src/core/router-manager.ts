@@ -8,13 +8,12 @@ import "../default/middleware/logger.js";
 
 export class RouteManager {
 
-  // 
   #paths: ControllerRegistry ;
   #middlewaresByPath: routeMiddlewares;
   #middlewareManger: MiddlewareManagerI;
 
   constructor(middlewareManager: MiddlewareManagerI) {
-    // we use map/ thats works becouse each endpoint its unique
+    // we use map/ thats works because each endpoint it's unique
     this.#middlewareManger = middlewareManager;
     this.#paths = new Map();
     this.#middlewaresByPath = new Map();
@@ -33,39 +32,61 @@ export class RouteManager {
   }
 
 
-  addPath(url: string,
-    callback: controller,
-    kwargs?: pathKwargs) {
-
-    // replace the reguex for starsWhit for best (or major my english is still broken) legibility
-    url = this.parsePath(url)
-
-    let methodsMap: routeMap = new Map()
-    this.#paths.set(url, methodsMap)
-    if (!kwargs || !kwargs.methods) {
-      METHODS.forEach((metod: string) => {
+  #basicRegisterMethods(incomngMethods: string [] ,methodsMap: routeMap, callback: controller){
+      incomngMethods.forEach((metod: string) => {
         methodsMap.set(metod, callback);
       });
-      return;
-    }
+  }
 
-    let incomngMethods: string[] = kwargs.methods
+  #registerAllMethodsByDefault(methodsMap: routeMap, callback: controller){
+    this.#basicRegisterMethods(METHODS, methodsMap, callback )
+  }
 
-    incomngMethods.forEach((method: string) => {
-      method = method.toLocaleUpperCase();
-      this.#validateMethod(method);
-      methodsMap.set(method, callback);
-    });
 
-    let middlewares: middlewareFunction [] | undefined= kwargs.handlers
+  #registerMethods(incomngMethods: string [], methodsMap: routeMap, callback: controller ){
+    
+    incomngMethods = incomngMethods.map((method: string) => { 
+      method = method.toUpperCase()
+      this.#validateMethod(method)
+      return method
+     })
+    
+     this.#basicRegisterMethods(incomngMethods, methodsMap, callback)
+  }
 
-    console.log(middlewares, url)
+  addPath(url: string, callback: controller, kwargs?: pathKwargs) {
+    // replace the reguex for starsWhit for best (or major my english is still broken) legibility
+    url = this.parsePath(url)
+    let methodsMap: routeMap = new Map()
+    this.#paths.set(url, methodsMap)
 
-    if(!middlewares){
+    let middlewares: middlewareFunction [] | undefined;
+    let incomngMethods: string[] | undefined;
+    let options:pathKwargs | undefined  = kwargs
+
+    if(!options ){
+      this.#registerAllMethodsByDefault(methodsMap, callback)
       this.#middlewaresByPath.set(url, [])
       return
     }
-    this.#middlewaresByPath.set(url, middlewares)
+
+    incomngMethods = options.methods
+
+    if(incomngMethods){
+      this.#registerMethods(incomngMethods, methodsMap, callback)
+    }else{
+      this.#registerAllMethodsByDefault(methodsMap, callback)
+    }
+
+
+    middlewares = options.handlers
+
+    if(middlewares){
+        this.#middlewaresByPath.set(url, middlewares)
+    }else{
+      this.#middlewaresByPath.set(url, [])
+    }
+
   }
 
 
@@ -77,11 +98,11 @@ export class RouteManager {
     return nameSpace
   }
 
- // i need fix that because i has a bigg problem indetify the acceptance 
- // dont delete req, remenber its for the acceptance 
+ // i need fix that because i has a big problem indetify the acceptance 
+ // dont delete req, reme,ber its for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
       let code = 404
-      req.statusCode = code;
+      res.statusCode = code;
       sendTextMessage(res, "path not found", code)
   }
 
@@ -95,7 +116,7 @@ export class RouteManager {
 
   #assertMethod(req: IncomingMessage, res: ServerResponse) : void{
     let code = 400;
-    req.statusCode = code;
+    res.statusCode = code;
     sendTextMessage(res, "Your reques comming whiout a method", code)
   
   }
@@ -105,7 +126,7 @@ export class RouteManager {
     let code = 500;
     if(callback === undefined){
       sendTextMessage(res, "Internal server error", code )
-      req.statusCode = code;
+      res.statusCode = code;
       throw new Error("Callback can't be Undefined ")
     }
 
@@ -115,7 +136,7 @@ export class RouteManager {
   
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
     
-    let  { req: processedReq, res: processedRes } = this.#middlewareManger.run(req, res);
+    this.#middlewareManger.run(req, res);
 
     let url: string | undefined =   req.url
 
@@ -146,23 +167,23 @@ export class RouteManager {
     
     let callbacks: middlewareFunction[] | undefined = this.#middlewaresByPath.get(url)
   
-    console.log(callbacks)
+    if(!callbacks){
+      return;
+    }
 
-    // if(!callbacks){
-    //   return;
-    // }
+    this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
-    // let  { req: processedReqByF, res: processedResF } = this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
+    callback(req, res);
 
-    callback(processedReq, processedRes);
-
-    req.statusCode = 200;
+    res.statusCode = 200;
 
   }
 
   createRouteModule(initialPath: string) {
     return new RouteModule(this, initialPath)
   }
+
+
 }
 
 
