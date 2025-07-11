@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse, METHODS } from 'http';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
 import { middlewareFunction, pathKwargs ,ControllerRegistry, routeMiddlewares, routeMap} from './type.js';
-import { sendTextMessage } from '../utils/http-responses.js';
+import { sendTextMessage } from '../helpers/http-responses.js';
 import { controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
@@ -24,13 +24,11 @@ export class RouteManager {
     return this.#paths.has(url);
   }
 
-
   #validateMethod(method: string):void{
       if (!METHODS.includes(method)) {
         throw new Error("The method is not suported");
       }
   }
-
 
   #basicRegisterMethods(incomngMethods: string [] ,methodsMap: routeMap, callback: controller){
       incomngMethods.forEach((metod: string) => {
@@ -41,7 +39,6 @@ export class RouteManager {
   #registerAllMethodsByDefault(methodsMap: routeMap, callback: controller){
     this.#basicRegisterMethods(METHODS, methodsMap, callback )
   }
-
 
   #registerMethods(incomngMethods: string [], methodsMap: routeMap, callback: controller ){
     
@@ -54,9 +51,27 @@ export class RouteManager {
      this.#basicRegisterMethods(incomngMethods, methodsMap, callback)
   }
 
+  #setMiddlewaresSafety(middlewares: middlewareFunction[] | undefined, url:string): void{   
+    if(middlewares){
+        this.#middlewaresByPath.set(url, middlewares)
+    }else{
+        this.#middlewaresByPath.set(url, [])
+    }
+  }
+
+  #setMethodsSafety(incomngMethods :string[] | undefined, callback: controller, methodsMap: routeMap): void {
+  if(incomngMethods){
+      this.#registerMethods(incomngMethods, methodsMap, callback)
+    }else{
+      this.#registerAllMethodsByDefault(methodsMap, callback)
+    }
+  }
   addPath(url: string, callback: controller, kwargs?: pathKwargs) {
-    // replace the reguex for starsWhit for best (or major my english is still broken) legibility
+
     url = this.parsePath(url)
+
+
+
     let methodsMap: routeMap = new Map()
     this.#paths.set(url, methodsMap)
 
@@ -71,24 +86,12 @@ export class RouteManager {
     }
 
     incomngMethods = options.methods
-
-    if(incomngMethods){
-      this.#registerMethods(incomngMethods, methodsMap, callback)
-    }else{
-      this.#registerAllMethodsByDefault(methodsMap, callback)
-    }
-
+    this.#setMethodsSafety(incomngMethods, callback, methodsMap);
 
     middlewares = options.handlers
-
-    if(middlewares){
-        this.#middlewaresByPath.set(url, middlewares)
-    }else{
-      this.#middlewaresByPath.set(url, [])
-    }
+    this.#setMiddlewaresSafety(middlewares, url)
 
   }
-
 
   parsePath(nameSpace: string) : string{
     if(!nameSpace.startsWith("/")){
@@ -113,14 +116,12 @@ export class RouteManager {
     return  path
   }
 
-
   #assertMethod(req: IncomingMessage, res: ServerResponse) : void{
     let code = 400;
     res.statusCode = code;
     sendTextMessage(res, "Your reques comming whiout a method", code)
   
   }
-
 
   #assertCallback(req: IncomingMessage, res: ServerResponse, callback : undefined | controller) : controller{
     let code = 500;
@@ -133,7 +134,6 @@ export class RouteManager {
     return callback
   }
 
-  
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
     
     this.#middlewareManger.run(req, res);
@@ -152,6 +152,7 @@ export class RouteManager {
     handler = this.#assertHandler(this.#paths.get(url));
 
     let method: string | undefined  = req.method
+
     if (!method) {
       this.#assertMethod(req, res)
       return; 
@@ -183,9 +184,7 @@ export class RouteManager {
     return new RouteModule(this, initialPath)
   }
 
-
 }
-
 
 
 export class RouteModule {

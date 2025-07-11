@@ -33,16 +33,11 @@ class MiddlewareManager implements MiddlewareManagerI{
         return {req, res}
     }
 
-    
-
-
     runRouteMiddlewares(req: IncomingMessage, res: ServerResponse, middelwareList: middlewareFunction []): {req: IncomingMessage, res: ServerResponse}
     {
         this.#runer(middelwareList, req, res)
         return {req, res}
     }
-
-
 
     static getInstance(): MiddlewareManager{
         return new MiddlewareManager();
