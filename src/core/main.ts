@@ -3,16 +3,19 @@ import { RouteManager, RouteModule } from './router-manager.js';
 import { MiddlewarePipeline } from './middleware-manager.js';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
 import { pathKwargs} from './type.js';
- 
+import { sendJsonMessage } from '../helpers/http-responses.js';
 
-class pathManagerAdapter{
-    #pathManager: RouteManager ;
+class PathManagerAdapter{
+    #pathManager: RouteManager;
+
     constructor(pathManager: RouteManager){
         this.#pathManager = pathManager
     }
-       addPath(name: string, callback: (req: any, res: any) => void, kwargs?: pathKwargs) {
+
+    addPath(name: string, callback: (req: any, res: any) => void, kwargs?: pathKwargs) {
         this.#pathManager.addPath(name, callback, kwargs);
     }
+
     createRouteModule(name: string):RouteModule {
        return this.#pathManager.createRouteModule(name);
     }
@@ -30,30 +33,38 @@ class Asimilation {
 
     #createServer() : http.Server {
         return http.createServer((req, res) => {
-
             try {
                 this.#routerManager.controlerHadler(req, res);
             } catch (err) {
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                  if (err instanceof Error) {
-                    console.log(err.message);
-                    console.log(err.stack);   
+                if (err instanceof Error) {
+                    this.#close(err.message, err.stack)
                 }
-                res.end('Internal Server error');
+                sendJsonMessage(res, {message: 'Internal Server error' }, 500)
+
             }
         })
 
     }
 
-    listen(port:number) {
+
+    #close(message: string, stack: string|undefined){
+        this.#liveServer.close( ()=>{
+            console.log(message)
+            console.log(stack)
+        })
+    }
+
+    #listen(port:number):void {
         this.#liveServer.listen(port, () => {
             console.log(`Servidor corriendo en http://localhost:${port}`);
         });
     }
 
-
-    urlManager(){
-        return new pathManagerAdapter(this.#routerManager);
+    init(port: number, path:string ){
+        this.#listen(port);
+    }
+    urlManager(): PathManagerAdapter {
+        return new PathManagerAdapter(this.#routerManager);
     }
 
 }

@@ -6,8 +6,9 @@
     "type": "module",
     "description": "",
     "scripts": {
-         "build": "tsc",
-          "start": "npm run build && node ./dist/run.js"
+        "build": "tsc",
+        "start": "npm run build && node ./dist/run.js",
+        "test": "npm run build && node ./dist/asi-test/main.js"
     },
     "repository": {
         "type": "git",
@@ -19,5 +20,9 @@
     "bugs": {
         "url": "https://github.com/juanjh1/Asimilation/issues"
     },
-    "homepage": "https://github.com/juanjh1/Asimilation#readme"
+    "homepage": "https://github.com/juanjh1/Asimilation#readme",
+    "dependencies": {
+        "glob": "^11.0.3",
+        "jest-haste-map": "^30.0.2"
+    }
 }

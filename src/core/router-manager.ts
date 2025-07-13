@@ -66,11 +66,11 @@ export class RouteManager {
       this.#registerAllMethodsByDefault(methodsMap, callback)
     }
   }
+
+
   addPath(url: string, callback: controller, kwargs?: pathKwargs) {
 
     url = this.parsePath(url)
-
-
 
     let methodsMap: routeMap = new Map()
     this.#paths.set(url, methodsMap)
