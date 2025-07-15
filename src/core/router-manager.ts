@@ -102,7 +102,7 @@ export class RouteManager {
   }
 
  // i need fix that because i has a big problem indetify the acceptance 
- // dont delete req, reme,ber its for the acceptance 
+ // dont delete req, reme,its for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
       let code = 404
       res.statusCode = code;

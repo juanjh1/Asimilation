@@ -1,5 +1,3 @@
-import { error } from "console";
-import { promises } from "dns";
 import fs from "fs";
 import { testResult } from "../core/type";
 
@@ -11,7 +9,7 @@ export  async function runTest (testFile: string): Promise<testResult> {
         success: false, 
         errorMessage: null}
     try{
-        const expect = <T> (received: T) => ({
+        const expect = <T> (received: T) : {toBe: (expected: T) => boolean } => ({
             toBe: (expected: T): boolean =>{
                 if(received !== expected){
                     throw new Error(`Expected ${expected} but received ${received}.`);
