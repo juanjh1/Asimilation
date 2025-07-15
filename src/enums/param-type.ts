@@ -2,6 +2,7 @@ export class ParamType{
 
     static IntType:ParamType = new ParamType("int", "\\d+")
     static StringType: ParamType = new ParamType("string", "[a-zA-Z]+")
+    
     #type: string;
     #piceOfRegex: string;
     constructor(type: string, piceOfRegex: string) {

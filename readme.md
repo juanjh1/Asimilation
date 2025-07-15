@@ -39,8 +39,7 @@ I also have another personal project written in **Tkinter (Python)**, which I wa
 - ✅ **Middleware System** — Supports chained middleware functions like in Express.
 - ✅ **Modular Structure** — Clear separation of concerns: routing, views, middleware, and utilities.
 - ✅ **TypeScript Migration** — Complete refactor to improve tooling, maintainability, and editor support.
-- ✅ **Educational Focus** — The code is well-commented and designed to be hackable and understandable for junior developers.
-
+- ✅ **Educational Focus** — The code is well-commented and designed to be hackable and understandable for junior developers (like me fr).
 ---
 
 ## 📁 Project Structure
@@ -86,7 +85,7 @@ C:.
                 stack.ts
 ```
 
-🚀 Getting Started
+## 🚀 Getting Started
 Install Node.js (v18+ recommended)
 
 Clone this repository
@@ -97,7 +96,7 @@ npx tsx run.ts
 Open http://localhost:3000 in your browser
 ```
 
-⚙️ How It Works
+## ⚙️ How It Works
 Routes and views are defined in urls.ts and views.ts
 
 The server listens for HTTP requests and matches the URL to registered routes
@@ -108,10 +107,10 @@ If a match is found, the associated controller/view is executed
 
 Responses are logged with color-coded status codes for clarit<<y
 
-❓ Why “Asimilation”?
+## ❓ Why “Asimilation”?
 This project is a living record of my backend learning journey, as I "assimilate" new concepts and best practices.
 It’s designed to be simple, educational, and a solid foundation for future experiments.
 
-💬 Made by a junior — for juniors.
+## 💬 Made by a junior — for juniors.
 Feel free to explore the code, learn from it, and even contribute.
 My goal is to keep building and learning — one line of TypeScript at a time.

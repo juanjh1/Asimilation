@@ -12,4 +12,6 @@ type routeMiddlewares = Map<string, middlewareFunction []>;
 
 type routeMap = Map<string, controller>;
 
-export {middlewareFunction, controller, pathKwargs, ControllerRegistry , routeMiddlewares, routeMap }
+type testResult = {success : boolean, errorMessage: string | null }
+
+export {middlewareFunction, controller, pathKwargs, ControllerRegistry , routeMiddlewares, routeMap, testResult }
