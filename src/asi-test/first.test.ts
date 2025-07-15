@@ -2,4 +2,4 @@
 console.log("Hello")
 
 
-throw new Error("monda de perro")
+throw new Error("------------")
