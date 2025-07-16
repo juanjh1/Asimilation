@@ -3,6 +3,10 @@ export class ParamType{
     static IntType:ParamType = new ParamType("int", "\\d+")
     static StringType: ParamType = new ParamType("string", "[a-zA-Z]+")
     
+    static values(){
+        return [this.IntType, this.StringType]
+    }
+
     #type: string;
     #piceOfRegex: string;
     constructor(type: string, piceOfRegex: string) {

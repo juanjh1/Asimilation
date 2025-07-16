@@ -36,11 +36,11 @@ export class RouteManager {
       });
   }
 
-  #registerAllMethodsByDefault(methodsMap: routeMap, callback: controller){
+  #registerAllMethodsByDefault(methodsMap: routeMap, callback: controller): void{
     this.#basicRegisterMethods(METHODS, methodsMap, callback )
   }
 
-  #registerMethods(incomngMethods: string [], methodsMap: routeMap, callback: controller ){
+  #registerMethods(incomngMethods: string [], methodsMap: routeMap, callback: controller ): void{
     
     incomngMethods = incomngMethods.map((method: string) => { 
       method = method.toUpperCase()
@@ -68,30 +68,42 @@ export class RouteManager {
   }
 
 
-  addPath(url: string, callback: controller, kwargs?: pathKwargs) {
+  addPath(url: string, callback: controller, kwargs?: pathKwargs): void{
 
     url = this.parsePath(url)
 
-    let methodsMap: routeMap = new Map()
-    this.#paths.set(url, methodsMap)
+    if(!/<[a-zA-Z]+:[a-zA-Z]+>/g.test(url)){
+      let methodsMap: routeMap = new Map()
+      this.#paths.set(url, methodsMap)
 
-    let middlewares: middlewareFunction [] | undefined;
-    let incomngMethods: string[] | undefined;
-    let options:pathKwargs | undefined  = kwargs
+      let middlewares: middlewareFunction [] | undefined;
+      let incomngMethods: string[] | undefined;
+      let options:pathKwargs | undefined  = kwargs
 
-    if(!options ){
-      this.#registerAllMethodsByDefault(methodsMap, callback)
-      this.#middlewaresByPath.set(url, [])
-      return
+      if(!options ){
+        this.#registerAllMethodsByDefault(methodsMap, callback)
+        this.#middlewaresByPath.set(url, [])
+        return
+      }
+  
+      incomngMethods = options.methods
+      this.#setMethodsSafety(incomngMethods, callback, methodsMap);
+
+      middlewares = options.handlers
+      this.#setMiddlewaresSafety(middlewares, url)
     }
 
-    incomngMethods = options.methods
-    this.#setMethodsSafety(incomngMethods, callback, methodsMap);
-
-    middlewares = options.handlers
-    this.#setMiddlewaresSafety(middlewares, url)
-
+    
+    
   }
+
+
+  craftUrl(url: string){
+
+        
+  }
+
+
 
   parsePath(nameSpace: string) : string{
     if(!nameSpace.startsWith("/")){
@@ -102,7 +114,7 @@ export class RouteManager {
   }
 
  // i need fix that because i has a big problem indetify the acceptance 
- // dont delete req, reme,its for the acceptance 
+ // dont delete req, reme,hits for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
       let code = 404
       res.statusCode = code;
@@ -120,7 +132,6 @@ export class RouteManager {
     let code = 400;
     res.statusCode = code;
     sendTextMessage(res, "Your reques comming whiout a method", code)
-  
   }
 
   #assertCallback(req: IncomingMessage, res: ServerResponse, callback : undefined | controller) : controller{
@@ -180,7 +191,7 @@ export class RouteManager {
 
   }
 
-  createRouteModule(initialPath: string) {
+  createRouteModule(initialPath: string): RouteModule  {
     return new RouteModule(this, initialPath)
   }
 
