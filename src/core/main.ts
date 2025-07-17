@@ -1,9 +1,10 @@
-import http from 'http';
+import http, { ServerResponse } from 'http';
 import { RouteManager, RouteModule } from './router-manager.js';
 import { MiddlewarePipeline } from './middleware-manager.js';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
 import { PathKwargs} from './type.js';
 import { sendJsonMessage } from '../helpers/http-responses.js';
+import { ArgumentedIncomingMessage } from '../interfaces/custom-request.js';
 
 class PathManagerAdapter{
     #pathManager: RouteManager;
@@ -12,7 +13,7 @@ class PathManagerAdapter{
         this.#pathManager = pathManager
     }
 
-    addPath(name: string, callback: (req: any, res: any) => void, kwargs?: PathKwargs) {
+    addPath(name: string, callback: (req: ArgumentedIncomingMessage, res: ServerResponse) => void, kwargs?: PathKwargs) {
         this.#pathManager.addPath(name, callback, kwargs);
     }
 

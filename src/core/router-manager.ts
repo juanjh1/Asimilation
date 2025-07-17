@@ -6,6 +6,8 @@ import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
 import { ParamType } from '../enums/param-type.js';
+import {ArgumentedIncomingMessage} from "../interfaces/custom-request.js"
+import { StdioNull } from 'child_process';
 
 export class RouteManager {
 
@@ -44,13 +46,13 @@ export class RouteManager {
 
   #registerMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor): void {
 
-    incomngMethods = incomngMethods.map((method: string) => {
+    const contextIncomngMethods = incomngMethods.map((method: string) => {
       method = method.toUpperCase()
       this.#validateMethod(method)
       return method
     })
 
-    this.#basicRegisterMethods(incomngMethods, methodsMap, functionDescriptor)
+    this.#basicRegisterMethods(contextIncomngMethods, methodsMap, functionDescriptor)
   }
 
 
@@ -99,21 +101,20 @@ export class RouteManager {
 
 
   #getRegexForType(match: string, _: string): string {
-
     const TYPE_LOCATION: number = 0
 
-    let type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
-    for (const param of ParamType.values()) {
-      if (param.isTypeEqual(type)) {
-        return param.getRegex();
-      }
+    const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
+
+    for (const param of ParamType.values()){
+      if (param.isTypeEqual(type)) { return param.getRegex(); }
     }
+
     throw new Error("Type is don't defined")
   }
 
   #urlToRegex(url: string): RegExp {
-    let modifiedUrl: string = url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/, this.#getRegexForType)
-    let regex: RegExp = new RegExp(modifiedUrl);
+    const modifiedUrl: string = url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, this.#getRegexForType)
+    const regex: RegExp = new RegExp(modifiedUrl);
     return regex;
   }
 
@@ -121,28 +122,28 @@ export class RouteManager {
     const NAME_LOCATION = 1
 
     const matches: string[] | null = url.match(/<[a-zA-Z]+:[a-zA-Z]+>/g)
-    if (!matches) {
-      throw new Error("No parameter matches found")
-    }
-    const values = matches.map((value: string) => {
-      return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION]
-    })
+    if (!matches) { throw new Error("No parameter matches found") }
+
+    const values = matches.map((value: string) => {return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION]})
     return values;
   }
 
 
   parsePath(nameSpace: string): string {
-    if (!nameSpace.startsWith("/")) {
-      nameSpace = "/" + nameSpace
-    }
-    nameSpace = nameSpace.replace(/\/+/g, "/");
-    return nameSpace
+
+    let contextNameSpace: string  = nameSpace
+
+    if (!contextNameSpace.startsWith("/")) { contextNameSpace = "/" + contextNameSpace }
+
+    contextNameSpace = contextNameSpace.replace(/\/+/g, "/");
+
+    return contextNameSpace;
   }
 
   // i need fix that because i has a big problem indetify the acceptance 
   // dont delete req, reme,hits for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse): void {
-    let code = 404
+    const  code = 404
     res.statusCode = code;
     sendTextMessage(res, "path not found", code)
   }
@@ -155,13 +156,13 @@ export class RouteManager {
   }
 
   #assertMethod(req: IncomingMessage, res: ServerResponse): void {
-    let code = 400;
+    const code = 400;
     res.statusCode = code;
     sendTextMessage(res, "Your reques comming whiout a method", code)
   }
 
   #assertCallback(req: IncomingMessage, res: ServerResponse, callback: undefined | Controller): Controller {
-    let code = 500;
+    const code = 500;
     if (callback === undefined) {
       sendTextMessage(res, "Internal server error", code)
       res.statusCode = code;
@@ -178,43 +179,76 @@ export class RouteManager {
     return  undefined;
   }
 
-  controlerHadler(req: IncomingMessage, res: ServerResponse): void {
 
+  #buildParams(routeMap: RouteMap | undefined, method: string, url: string , regex: RegExp | undefined) :{[key: string]: string} {
+      const paramsObject : {[key: string]: string} = {};
+
+      if(!routeMap || !regex) { return paramsObject; }
+
+      const params : string[] = routeMap.get(method)?.params || [];
+      const values : string [] =  regex.exec(url)?.slice(1, params.length+1) || []
+
+      if(values.length !== params.length){ throw new Error("")}
+      
+      params.forEach((param, index) => { paramsObject[param] = values[index]; });
+
+      return paramsObject;
+  }
+
+  #validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined, req: IncomingMessage, res: ServerResponse): 
+  {httpMethodHandlers: RouteMap, method: string}| undefined{
+    if (!httpMethodHandlers) {
+      this.#handleNotFound(req, res);
+      return undefined;
+    }
+
+    if (!method) {
+      this.#assertMethod(req, res);
+      return undefined;
+    }
+
+    if (!httpMethodHandlers.has(method)) {
+      this.#handleNotFound(req, res);
+      return undefined;
+    }
+
+    return {httpMethodHandlers, method}
+  }
+  controlerHadler(req: IncomingMessage, res: ServerResponse): void {
     this.#middlewareManger.run(req, res);
+
     const url: string | undefined = req.url ?? "";
     const method: string | undefined = req.method;
+
     const isStatic: boolean = this.#pathInclude(url);
     const isDynamic: RegExp | undefined = this.#findMatchingDynamicPath(url);
-    let handler: RouteMap | undefined = isStatic ? this.#assertHandler(this.#paths.get(url)) : 
-                            isDynamic != undefined ? this.#assertHandler(this.#dynamicPath.get(isDynamic)): undefined
 
-    if(!handler){
-        this.#handleNotFound(req, res);
-        return
+
+    const  handler : RouteMap | undefined = isStatic 
+      ? this.#assertHandler(this.#paths.get(url)) 
+      : isDynamic  
+      ? this.#assertHandler(this.#dynamicPath.get(isDynamic))
+      : undefined;
+
+    let validation = this.#validateRoute(handler, method, req, res);
+    
+    if(!validation){
+      return
     }
-     if (!method) {
-        this.#assertMethod(req, res)
-        return;
-      }
 
-      if (!handler.has(method)) {
-        this.#handleNotFound(req, res)
-        return;
-      }
+    const {httpMethodHandlers, method: validatedMethod  } = validation;
+    const callback: Controller = this.#assertCallback(req, res, httpMethodHandlers.get(validatedMethod)?.controller);
+    const  paramsForRequest : { [key: string]: string }= this.#buildParams(httpMethodHandlers, validatedMethod, url, isDynamic)
+    const  callbacks: MiddlewareFunction[] = httpMethodHandlers.get(validatedMethod)?.middlewares ?? [];
 
-      let callback: Controller = this.#assertCallback(req, res, handler.get(method)?.controller);
+    this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
-      let params: string[] = handler.get(method)?.params ?? [];
+    const newRequest : ArgumentedIncomingMessage= (req as ArgumentedIncomingMessage ) ;
+    newRequest.params = paramsForRequest;
+      
+    callback(newRequest, res);
+    res.statusCode = 200;
 
-      let callbacks: MiddlewareFunction[] = handler.get(method)?.middlewares ?? [];
-
-      this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
-
-      callback(req, res);
-
-      res.statusCode = 200;
-
-  
   }
 
   createRouteModule(initialPath: string): RouteModule {
@@ -222,10 +256,6 @@ export class RouteManager {
   }
 
 }
-
-
-
-
 
 export class RouteModule {
   #manager: RouteManager;
@@ -236,10 +266,9 @@ export class RouteModule {
     this.#initialPath = this.#manager.parsePath(nameSpace);
   }
 
-
   addPath(path: string, callback: Controller, kwargs?: PathKwargs) {
-    path = this.#initialPath + this.#manager.parsePath(path)
-    this.#manager.addPath(path, callback, kwargs)
+    const contextPath = this.#initialPath + this.#manager.parsePath(path)
+    this.#manager.addPath(contextPath, callback, kwargs)
   }
 
   createRouteModule(name: string) {

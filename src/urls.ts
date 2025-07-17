@@ -4,7 +4,9 @@ import {IncomingMessage, ServerResponse} from "http";
 import { ParamType } from "./enums/param-type.js";
 
 url.addPath("", (req, res) => {
+    console.log(req.params)
     res.end(JSON.stringify({ message: "Hola mi bb" }));
+
 })
 
 url.addPath("hola", (req, res) => {
@@ -14,7 +16,8 @@ url.addPath("hola", (req, res) => {
 })
 
 
-url.addPath("hola/<int:id>", (req, res) => {
+url.addPath("hola/<int:id>/<string:hola>/", (req, res) => {
+    console.log(req.params)
     res.end(JSON.stringify("hola" ));
 })
 
