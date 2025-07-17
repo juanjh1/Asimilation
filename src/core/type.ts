@@ -1,17 +1,33 @@
 import {IncomingMessage, ServerResponse} from "http"
 
-type middlewareFunction =  (req: IncomingMessage, res: ServerResponse, next: ()=> void) => void;
+type MiddlewareFunction =  (req: IncomingMessage, res: ServerResponse, next: ()=> void) => void;
 
-type controller = (req: IncomingMessage, res: ServerResponse) => void;
+type Controller = (req: IncomingMessage, res: ServerResponse) => void;
 
-type pathKwargs = { methods?: string[], handlers?: middlewareFunction[] };
+type PathKwargs = { methods?: string[], handlers?: MiddlewareFunction[] };
 
-type ControllerRegistry = Map<string , Map<string, controller>>;
+type RouteMap = Map<string,  FunctionDescriptor>;
 
-type routeMiddlewares = Map<string, middlewareFunction []>;
+type ControllerRegistry = Map<string , RouteMap>;
 
-type routeMap = Map<string, controller>;
+type ParamControllerRegistry = Map<RegExp , RouteMap>;
 
-type testResult = {success : boolean, errorMessage: string | null }
+type  FunctionDescriptor  = {
+     params: string[],
+     controller: Controller,
+     middlewares: MiddlewareFunction [];
+}
 
-export {middlewareFunction, controller, pathKwargs, ControllerRegistry , routeMiddlewares, routeMap, testResult }
+type TestResult = {success : boolean, errorMessage: string | null }
+
+export {
+        MiddlewareFunction, 
+        Controller, 
+        PathKwargs, 
+        ControllerRegistry,  
+        RouteMap, 
+        TestResult, 
+        ParamControllerRegistry,
+        FunctionDescriptor
+        }
+

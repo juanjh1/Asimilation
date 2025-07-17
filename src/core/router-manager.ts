@@ -1,143 +1,180 @@
 import { IncomingMessage, ServerResponse, METHODS } from 'http';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
-import { middlewareFunction, pathKwargs ,ControllerRegistry, routeMiddlewares, routeMap} from './type.js';
+import { MiddlewareFunction, PathKwargs, ControllerRegistry, RouteMap, ParamControllerRegistry, FunctionDescriptor } from './type.js';
 import { sendTextMessage } from '../helpers/http-responses.js';
-import { controller } from './type.js';
+import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
+import { ParamType } from '../enums/param-type.js';
 
 export class RouteManager {
 
-  #paths: ControllerRegistry ;
-  #middlewaresByPath: routeMiddlewares;
+  #paths: ControllerRegistry;
+  #dynamicPath: ParamControllerRegistry;
   #middlewareManger: MiddlewareManagerI;
+  // #pathsWhitParams : string;
 
   constructor(middlewareManager: MiddlewareManagerI) {
     // we use map/ thats works because each endpoint it's unique
     this.#middlewareManger = middlewareManager;
+    this.#dynamicPath = new Map();
     this.#paths = new Map();
-    this.#middlewaresByPath = new Map();
-    
+
   }
 
   #pathInclude(url: string): boolean {
     return this.#paths.has(url);
   }
 
-  #validateMethod(method: string):void{
-      if (!METHODS.includes(method)) {
-        throw new Error("The method is not suported");
-      }
+  #validateMethod(method: string): void {
+    if (!METHODS.includes(method)) {
+      throw new Error("The method is not suported");
+    }
   }
 
-  #basicRegisterMethods(incomngMethods: string [] ,methodsMap: routeMap, callback: controller){
-      incomngMethods.forEach((metod: string) => {
-        methodsMap.set(metod, callback);
-      });
+  #basicRegisterMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor ) {
+    incomngMethods.forEach((metod: string) => {
+      methodsMap.set(metod, functionDescriptor);
+    });
   }
 
-  #registerAllMethodsByDefault(methodsMap: routeMap, callback: controller): void{
-    this.#basicRegisterMethods(METHODS, methodsMap, callback )
+  #registerAllMethodsByDefault(methodsMap: RouteMap, functionDescriptor: FunctionDescriptor): void {
+    this.#basicRegisterMethods(METHODS, methodsMap,functionDescriptor )
   }
 
-  #registerMethods(incomngMethods: string [], methodsMap: routeMap, callback: controller ): void{
-    
-    incomngMethods = incomngMethods.map((method: string) => { 
+  #registerMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor): void {
+
+    incomngMethods = incomngMethods.map((method: string) => {
       method = method.toUpperCase()
       this.#validateMethod(method)
       return method
-     })
-    
-     this.#basicRegisterMethods(incomngMethods, methodsMap, callback)
+    })
+
+    this.#basicRegisterMethods(incomngMethods, methodsMap, functionDescriptor)
   }
 
-  #setMiddlewaresSafety(middlewares: middlewareFunction[] | undefined, url:string): void{   
-    if(middlewares){
-        this.#middlewaresByPath.set(url, middlewares)
-    }else{
-        this.#middlewaresByPath.set(url, [])
+  // #setMiddlewaresSafety(middlewares: middlewareFunction[] | undefined, url:string): void{   
+  //   if(middlewares){
+  //       this.#middlewaresByPath.set(url, middlewares)
+  //   }else{
+  //       this.#middlewaresByPath.set(url, [])
+  //   }
+  // }
+
+  #setMethodsSafety(incomngMethods: string[] , functionDescriptor: FunctionDescriptor, methodsMap: RouteMap): void {
+    if (incomngMethods.length == 0) {
+      this.#registerMethods(incomngMethods, methodsMap, functionDescriptor)
+    } else {
+      this.#registerAllMethodsByDefault(methodsMap, functionDescriptor)
     }
   }
 
-  #setMethodsSafety(incomngMethods :string[] | undefined, callback: controller, methodsMap: routeMap): void {
-  if(incomngMethods){
-      this.#registerMethods(incomngMethods, methodsMap, callback)
-    }else{
-      this.#registerAllMethodsByDefault(methodsMap, callback)
-    }
+
+  #buildFunctionDescriptor(params: string[], controller: Controller, middlewares: MiddlewareFunction []): FunctionDescriptor{
+      return {params, controller, middlewares}
   }
 
 
-  addPath(url: string, callback: controller, kwargs?: pathKwargs): void{
+  addPath(url: string, callback: Controller, kwargs?: PathKwargs): void {
 
     url = this.parsePath(url)
+    const middlewares: MiddlewareFunction [] = kwargs?.handlers ?? [];
+    const incomngMethods: string[] = kwargs?.methods ?? [];
+    const options: PathKwargs | undefined = kwargs
+    const methodsMap: RouteMap = new Map() 
+    const isDynamic:boolean = /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url);
+    const params = isDynamic ? this.#extractParamName(url) : [];
+    const descriptor: FunctionDescriptor = this.#buildFunctionDescriptor(params,callback, middlewares)
+    
+      if(!options){
+          this.#registerAllMethodsByDefault(methodsMap, descriptor )
+          if ( isDynamic){
+              this.#paths.set(url, methodsMap)  
+          }else{
+              this.#dynamicPath.set(this.#urlToRegex(url), methodsMap)
+          }
+          return
+       }
+      
+      this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
 
-    if(!/<[a-zA-Z]+:[a-zA-Z]+>/g.test(url)){
-      let methodsMap: routeMap = new Map()
-      this.#paths.set(url, methodsMap)
-
-      let middlewares: middlewareFunction [] | undefined;
-      let incomngMethods: string[] | undefined;
-      let options:pathKwargs | undefined  = kwargs
-
-      if(!options ){
-        this.#registerAllMethodsByDefault(methodsMap, callback)
-        this.#middlewaresByPath.set(url, [])
+      if (!isDynamic) {
+        this.#paths.set(url, methodsMap) 
         return
       }
-  
-      incomngMethods = options.methods
-      this.#setMethodsSafety(incomngMethods, callback, methodsMap);
+      
+      this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
+      this.#dynamicPath.set( this.#urlToRegex(url), methodsMap)
 
-      middlewares = options.handlers
-      this.#setMiddlewaresSafety(middlewares, url)
+  }
+
+
+  #getRegexForType(match: string, _: string): string {
+
+    const TYPE_LOCATION: number = 0
+
+    let type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
+    for (const param of ParamType.values()) {
+      if (param.isTypeEqual(type)) {
+        return param.getRegex();
+      }
     }
+    throw new Error("Type is don't defined")
+  }
 
-    
-    
+  #urlToRegex(url: string): RegExp {
+    let modifiedUrl: string = url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/, this.#getRegexForType)
+    let regex: RegExp = new RegExp(modifiedUrl);
+    return regex;
+  }
+
+  #extractParamName(url: string): string[] {
+    const NAME_LOCATION = 1
+
+    const matches: string[] | null = url.match(/<[a-zA-Z]+:[a-zA-Z]+>/g)
+    if (!matches) {
+      throw new Error("No parameter matches found")
+    }
+    const values = matches.map((value: string) => {
+      return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION]
+    })
+    return values;
   }
 
 
-  craftUrl(url: string){
-
-        
-  }
-
-
-
-  parsePath(nameSpace: string) : string{
-    if(!nameSpace.startsWith("/")){
-      nameSpace = "/" +  nameSpace
+  parsePath(nameSpace: string): string {
+    if (!nameSpace.startsWith("/")) {
+      nameSpace = "/" + nameSpace
     }
     nameSpace = nameSpace.replace(/\/+/g, "/");
     return nameSpace
   }
 
- // i need fix that because i has a big problem indetify the acceptance 
- // dont delete req, reme,hits for the acceptance 
-  #handleNotFound(req: IncomingMessage, res: ServerResponse) : void{
-      let code = 404
-      res.statusCode = code;
-      sendTextMessage(res, "path not found", code)
+  // i need fix that because i has a big problem indetify the acceptance 
+  // dont delete req, reme,hits for the acceptance 
+  #handleNotFound(req: IncomingMessage, res: ServerResponse): void {
+    let code = 404
+    res.statusCode = code;
+    sendTextMessage(res, "path not found", code)
   }
 
-  #assertHandler(path: routeMap | undefined ):routeMap{
-    if(path === undefined){
+  #assertHandler(path: RouteMap | undefined): RouteMap {
+    if (path === undefined) {
       throw new Error("The path is not working properly")
     }
-    return  path
+    return path
   }
 
-  #assertMethod(req: IncomingMessage, res: ServerResponse) : void{
+  #assertMethod(req: IncomingMessage, res: ServerResponse): void {
     let code = 400;
     res.statusCode = code;
     sendTextMessage(res, "Your reques comming whiout a method", code)
   }
 
-  #assertCallback(req: IncomingMessage, res: ServerResponse, callback : undefined | controller) : controller{
+  #assertCallback(req: IncomingMessage, res: ServerResponse, callback: undefined | Controller): Controller {
     let code = 500;
-    if(callback === undefined){
-      sendTextMessage(res, "Internal server error", code )
+    if (callback === undefined) {
+      sendTextMessage(res, "Internal server error", code)
       res.statusCode = code;
       throw new Error("Callback can't be Undefined ")
     }
@@ -146,52 +183,53 @@ export class RouteManager {
   }
 
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
-    
+
     this.#middlewareManger.run(req, res);
 
-    let url: string | undefined =   req.url
+    const url: string | undefined = req.url
+    
+    const method: string | undefined = req.method
+    let handler: RouteMap;
 
-    if(!url){return;}
+    if (!url) { return; }
 
     if (!this.#pathInclude(url)) {
       this.#handleNotFound(req, res);
       return;
-    }  
+    }
 
-    let handler: routeMap;
-    
+
     handler = this.#assertHandler(this.#paths.get(url));
 
-    let method: string | undefined  = req.method
 
     if (!method) {
       this.#assertMethod(req, res)
-      return; 
-    }
-
-    if (!handler.has(method)) {
-      this.#handleNotFound(req, res)
       return;
     }
 
-    let callback: controller  = this.#assertCallback(req, res,handler.get(method));
-    
-    
-    let callbacks: middlewareFunction[] | undefined = this.#middlewaresByPath.get(url)
-  
-    if(!callbacks){
-      return;
-    }
+    // if (!handler.has(method)) {
+    //   this.#handleNotFound(req, res)
+    //   return;
+    // }
 
-    this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
+    // let callback: controller  = this.#assertCallback(req, res,handler.get(method));
 
-    callback(req, res);
+
+    //let callbacks: middlewareFunction[] | undefined = this.#middlewaresByPath.get(url)
+
+    // if(!callbacks){
+    //   return;
+    // }
+
+    // this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
+
+    // callback(req, res);
 
     res.statusCode = 200;
 
   }
 
-  createRouteModule(initialPath: string): RouteModule  {
+  createRouteModule(initialPath: string): RouteModule {
     return new RouteModule(this, initialPath)
   }
 
@@ -208,12 +246,12 @@ export class RouteModule {
   }
 
 
-  addPath(path: string, callback: controller, kwargs?: pathKwargs){
-     path = this.#initialPath + this.#manager.parsePath(path)
-     this.#manager.addPath(path, callback, kwargs)
+  addPath(path: string, callback: Controller, kwargs?: PathKwargs) {
+    path = this.#initialPath + this.#manager.parsePath(path)
+    this.#manager.addPath(path, callback, kwargs)
   }
 
-    createRouteModule(name: string) {
+  createRouteModule(name: string) {
     return new RouteModule(this.#manager, (this.#initialPath + this.#manager.parsePath(name)))
   }
 

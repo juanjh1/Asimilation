@@ -1,21 +1,21 @@
 import {IncomingMessage, ServerResponse} from "http"
 import { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
-import { middlewareFunction } from "./type.js";
+import { MiddlewareFunction } from "./type.js";
 
 
 class MiddlewareManager implements MiddlewareManagerI{
     static instance: MiddlewareManager = MiddlewareManager.getInstance();
-    #middelwares: middlewareFunction [];
+    #middelwares: MiddlewareFunction [];
     constructor(){
         this.#middelwares  = []
     }
 
-    addMiddleware(middelware: middlewareFunction){
+    addMiddleware(middelware: MiddlewareFunction){
         this.#middelwares.push(middelware)
     } 
 
     
-    #runer(middelwareList: middlewareFunction [], req: IncomingMessage, res: ServerResponse){
+    #runer(middelwareList: MiddlewareFunction [], req: IncomingMessage, res: ServerResponse){
 
          const dispach = (index: number): void => {
                if( middelwareList.length == 0){ return }
@@ -33,7 +33,7 @@ class MiddlewareManager implements MiddlewareManagerI{
         return {req, res}
     }
 
-    runRouteMiddlewares(req: IncomingMessage, res: ServerResponse, middelwareList: middlewareFunction []): {req: IncomingMessage, res: ServerResponse}
+    runRouteMiddlewares(req: IncomingMessage, res: ServerResponse, middelwareList: MiddlewareFunction []): {req: IncomingMessage, res: ServerResponse}
     {
         this.#runer(middelwareList, req, res)
         return {req, res}

@@ -2,7 +2,7 @@ import http from 'http';
 import { RouteManager, RouteModule } from './router-manager.js';
 import { MiddlewarePipeline } from './middleware-manager.js';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
-import { pathKwargs} from './type.js';
+import { PathKwargs} from './type.js';
 import { sendJsonMessage } from '../helpers/http-responses.js';
 
 class PathManagerAdapter{
@@ -12,7 +12,7 @@ class PathManagerAdapter{
         this.#pathManager = pathManager
     }
 
-    addPath(name: string, callback: (req: any, res: any) => void, kwargs?: pathKwargs) {
+    addPath(name: string, callback: (req: any, res: any) => void, kwargs?: PathKwargs) {
         this.#pathManager.addPath(name, callback, kwargs);
     }
 
@@ -61,7 +61,7 @@ class Asimilation {
     }
 
     init(port: number, path:string ){
-        // here is the hotReload
+        // here is the hotReload, but first we ned
         this.#listen(port);
     }
     urlManager(): PathManagerAdapter {

@@ -1,9 +1,9 @@
 export class ParamType{
 
-    static IntType:ParamType = new ParamType("int", "\\d+")
-    static StringType: ParamType = new ParamType("string", "[a-zA-Z]+")
+    static IntType:ParamType = new ParamType("int", "(\\d+)")
+    static StringType: ParamType = new ParamType("string", "([a-zA-Z]+)")
     
-    static values(){
+    static values(): ParamType[] {
         return [this.IntType, this.StringType]
     }
 
@@ -21,5 +21,9 @@ export class ParamType{
     getType(): string{
         return this.#type;
     }
+    isTypeEqual(type: string){
+        return this.#type === type;
+    }
+
 
 }
