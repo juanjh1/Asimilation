@@ -1,11 +1,11 @@
 import fs from "fs";
-import { testResult } from "../core/type";
+import { TestResult } from "../core/type";
 
 
-export  async function runTest (testFile: string): Promise<testResult> {
+export  async function runTest (testFile: string): Promise<TestResult> {
     const code = await fs.promises.readFile(testFile, "utf-8")
 
-    const tetsResult: testResult= {
+    const tetsResult: TestResult= {
         success: false, 
         errorMessage: null}
     try{

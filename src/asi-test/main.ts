@@ -3,7 +3,7 @@ import { cpus, platform } from 'os';
 import { fileURLToPath } from 'url';
 import { dirname, join, relative } from 'path';
 import { runTest } from './worker.js';
-import { testResult } from '../core/type.js';
+import { TestResult } from '../core/type.js';
 import chalk from "chalk"
 
 
@@ -34,7 +34,7 @@ const testFiles = hasteFS.matchFilesWithGlob(['**/*.test.js'], root);
 await Promise.all(
     Array.from(testFiles).map(
         async (testFile) => {
-           let {success, errorMessage}: testResult =  await runTest(testFile);
+           let {success, errorMessage}: TestResult =  await runTest(testFile);
            const status = success ? chalk.green.inverse("PASS") :
             chalk.red.inverse("FAIL");
 

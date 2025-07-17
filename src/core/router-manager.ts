@@ -32,14 +32,14 @@ export class RouteManager {
     }
   }
 
-  #basicRegisterMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor ) {
+  #basicRegisterMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor) {
     incomngMethods.forEach((metod: string) => {
       methodsMap.set(metod, functionDescriptor);
     });
   }
 
   #registerAllMethodsByDefault(methodsMap: RouteMap, functionDescriptor: FunctionDescriptor): void {
-    this.#basicRegisterMethods(METHODS, methodsMap,functionDescriptor )
+    this.#basicRegisterMethods(METHODS, methodsMap, functionDescriptor)
   }
 
   #registerMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor): void {
@@ -53,16 +53,9 @@ export class RouteManager {
     this.#basicRegisterMethods(incomngMethods, methodsMap, functionDescriptor)
   }
 
-  // #setMiddlewaresSafety(middlewares: middlewareFunction[] | undefined, url:string): void{   
-  //   if(middlewares){
-  //       this.#middlewaresByPath.set(url, middlewares)
-  //   }else{
-  //       this.#middlewaresByPath.set(url, [])
-  //   }
-  // }
 
-  #setMethodsSafety(incomngMethods: string[] , functionDescriptor: FunctionDescriptor, methodsMap: RouteMap): void {
-    if (incomngMethods.length == 0) {
+  #setMethodsSafety(incomngMethods: string[], functionDescriptor: FunctionDescriptor, methodsMap: RouteMap): void {
+    if (incomngMethods.length !== 0) {
       this.#registerMethods(incomngMethods, methodsMap, functionDescriptor)
     } else {
       this.#registerAllMethodsByDefault(methodsMap, functionDescriptor)
@@ -70,41 +63,37 @@ export class RouteManager {
   }
 
 
-  #buildFunctionDescriptor(params: string[], controller: Controller, middlewares: MiddlewareFunction []): FunctionDescriptor{
-      return {params, controller, middlewares}
+  #buildFunctionDescriptor(params: string[], controller: Controller, middlewares: MiddlewareFunction[]): FunctionDescriptor {
+    return { params, controller, middlewares }
   }
 
 
   addPath(url: string, callback: Controller, kwargs?: PathKwargs): void {
 
     url = this.parsePath(url)
-    const middlewares: MiddlewareFunction [] = kwargs?.handlers ?? [];
+    const middlewares: MiddlewareFunction[] = kwargs?.handlers ?? [];
     const incomngMethods: string[] = kwargs?.methods ?? [];
     const options: PathKwargs | undefined = kwargs
-    const methodsMap: RouteMap = new Map() 
-    const isDynamic:boolean = /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url);
+    const methodsMap: RouteMap = new Map()
+    const isDynamic: boolean = /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url);
     const params = isDynamic ? this.#extractParamName(url) : [];
-    const descriptor: FunctionDescriptor = this.#buildFunctionDescriptor(params,callback, middlewares)
-    
-      if(!options){
-          this.#registerAllMethodsByDefault(methodsMap, descriptor )
-          if ( isDynamic){
-              this.#paths.set(url, methodsMap)  
-          }else{
-              this.#dynamicPath.set(this.#urlToRegex(url), methodsMap)
-          }
-          return
-       }
-      
-      this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
+    const descriptor: FunctionDescriptor = this.#buildFunctionDescriptor(params, callback, middlewares)
 
+    this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
+    if (!options) {
       if (!isDynamic) {
-        this.#paths.set(url, methodsMap) 
-        return
+        this.#paths.set(url, methodsMap)
+      } else {
+        this.#dynamicPath.set(this.#urlToRegex(url), methodsMap)
       }
-      
-      this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
-      this.#dynamicPath.set( this.#urlToRegex(url), methodsMap)
+      return
+    }
+
+    if (!isDynamic) {
+      this.#paths.set(url, methodsMap)
+      return
+    }
+    this.#dynamicPath.set(this.#urlToRegex(url), methodsMap)
 
   }
 
@@ -182,51 +171,50 @@ export class RouteManager {
     return callback
   }
 
+  #findMatchingDynamicPath(url: string): RegExp | undefined{
+  for (const key of this.#dynamicPath.keys()) {
+    if (key.test(url)) return  key ;
+  }
+    return  undefined;
+  }
+
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
 
     this.#middlewareManger.run(req, res);
+    const url: string | undefined = req.url ?? "";
+    const method: string | undefined = req.method;
+    const isStatic: boolean = this.#pathInclude(url);
+    const isDynamic: RegExp | undefined = this.#findMatchingDynamicPath(url);
+    let handler: RouteMap | undefined = isStatic ? this.#assertHandler(this.#paths.get(url)) : 
+                            isDynamic != undefined ? this.#assertHandler(this.#dynamicPath.get(isDynamic)): undefined
 
-    const url: string | undefined = req.url
-    
-    const method: string | undefined = req.method
-    let handler: RouteMap;
-
-    if (!url) { return; }
-
-    if (!this.#pathInclude(url)) {
-      this.#handleNotFound(req, res);
-      return;
+    if(!handler){
+        this.#handleNotFound(req, res);
+        return
     }
+     if (!method) {
+        this.#assertMethod(req, res)
+        return;
+      }
 
+      if (!handler.has(method)) {
+        this.#handleNotFound(req, res)
+        return;
+      }
 
-    handler = this.#assertHandler(this.#paths.get(url));
+      let callback: Controller = this.#assertCallback(req, res, handler.get(method)?.controller);
 
+      let params: string[] = handler.get(method)?.params ?? [];
 
-    if (!method) {
-      this.#assertMethod(req, res)
-      return;
-    }
+      let callbacks: MiddlewareFunction[] = handler.get(method)?.middlewares ?? [];
 
-    // if (!handler.has(method)) {
-    //   this.#handleNotFound(req, res)
-    //   return;
-    // }
+      this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
-    // let callback: controller  = this.#assertCallback(req, res,handler.get(method));
+      callback(req, res);
 
+      res.statusCode = 200;
 
-    //let callbacks: middlewareFunction[] | undefined = this.#middlewaresByPath.get(url)
-
-    // if(!callbacks){
-    //   return;
-    // }
-
-    // this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
-
-    // callback(req, res);
-
-    res.statusCode = 200;
-
+  
   }
 
   createRouteModule(initialPath: string): RouteModule {
@@ -234,6 +222,9 @@ export class RouteManager {
   }
 
 }
+
+
+
 
 
 export class RouteModule {

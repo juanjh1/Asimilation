@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { middlewareFunction } from '../core/type';
+import { MiddlewareFunction } from '../core/type';
 
 export interface MiddlewareManagerI {
     run(
@@ -9,5 +9,5 @@ export interface MiddlewareManagerI {
     
     runRouteMiddlewares (req: IncomingMessage, 
                          res: ServerResponse, 
-                         middelwareList: middlewareFunction []): void
+                         middelwareList: MiddlewareFunction []): void
 }

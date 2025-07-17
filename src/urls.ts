@@ -8,10 +8,13 @@ url.addPath("", (req, res) => {
 })
 
 url.addPath("hola", (req, res) => {
-    for (const v in  ParamType.values()) {
-        console.log(v)
-    }
 
+
+    res.end(JSON.stringify("hola" ));
+})
+
+
+url.addPath("hola/<int:id>", (req, res) => {
     res.end(JSON.stringify("hola" ));
 })
 
