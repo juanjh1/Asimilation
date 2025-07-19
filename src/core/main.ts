@@ -60,7 +60,7 @@ class Asimilation {
             console.log(`Watching for file changes with StatReloader\n`);
             console.log(dateFormater());
             console.log();
-            console.log(chalk.yellow(`Server runing on `) + chalk.underline.yellow(`http://127.0.0.1:${port}`));
+            console.log(chalk.yellow(`Server runing on `) + chalk.underline.italic.yellow(`http://127.0.0.1:${port}`));
             console.log("Quit the server with CTRL-BREAK.\n\n");
             console.log(chalk.bold.yellow(`Still cooking... not ready to serve.`) );
         });
