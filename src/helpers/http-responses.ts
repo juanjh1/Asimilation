@@ -13,6 +13,12 @@ export function sendJsonMessage(res: ServerResponse, json: Object, code: number)
 
 
 export function sendTextMessage(res: ServerResponse, text: string, code: number) {
- 
     sendResponse(res,text, {code, contentType: 'text/plain'  } )
+}
+
+
+export function redirect(res: ServerResponse, url: string, statusCode: number = 302){
+    res.statusCode = statusCode;
+    res.setHeader("location", url);
+    res.end();
 }

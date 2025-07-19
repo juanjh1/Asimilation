@@ -1,15 +1,18 @@
-import http, { ServerResponse } from 'http';
+import http, { IncomingMessage, ServerResponse } from 'http';
 import { RouteManager, RouteModule } from './router-manager.js';
 import { MiddlewarePipeline } from './middleware-manager.js';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
-import { PathKwargs} from './type.js';
+import { PathKwargs } from './type.js';
 import { sendJsonMessage } from '../helpers/http-responses.js';
 import { ArgumentedIncomingMessage } from '../interfaces/custom-request.js';
+import chalk from "chalk"
+import { dateFormater } from '../utils/date-utils.js';
 
-class PathManagerAdapter{
+
+class PathManagerAdapter {
     #pathManager: RouteManager;
 
-    constructor(pathManager: RouteManager){
+    constructor(pathManager: RouteManager) {
         this.#pathManager = pathManager
     }
 
@@ -17,8 +20,8 @@ class PathManagerAdapter{
         this.#pathManager.addPath(name, callback, kwargs);
     }
 
-    createRouteModule(name: string):RouteModule {
-       return this.#pathManager.createRouteModule(name);
+    createRouteModule(name: string): RouteModule {
+        return this.#pathManager.createRouteModule(name);
     }
 }
 
@@ -26,51 +29,60 @@ class PathManagerAdapter{
 class Asimilation {
     static server = new Asimilation(MiddlewarePipeline);
     #routerManager: RouteManager;
-    #liveServer: http.Server; 
+    #liveServer: http.Server;
     constructor(middelwareManager: MiddlewareManagerI) {
         this.#routerManager = new RouteManager(middelwareManager);
         this.#liveServer = this.#createServer();
     }
 
-    #createServer() : http.Server {
-        return http.createServer((req, res) => {
-            try {
-                this.#routerManager.controlerHadler(req, res);
-            } catch (err) {
-                if (err instanceof Error) {
-                    this.#close(err.message, err.stack)
-                }
-                sendJsonMessage(res, {message: 'Internal Server error' }, 500)
-
-            }
-        })
-
+    #createServer(): http.Server {
+        return http.createServer()
     }
 
 
-    #close(message: string, stack: string|undefined){
-        this.#liveServer.close( ()=>{
-            console.log(message)
-            console.log(stack)
+    #onRequest(req: IncomingMessage, res: ServerResponse) :void{
+        try { this.#routerManager.controlerHadler(req, res); }
+        catch (err) {
+            if (err instanceof Error) { this.#close(err.message, err.stack) }
+            sendJsonMessage(res, { message: 'Internal Server error' }, 500)
+        }
+    }
+
+    #close(message: string, stack: string | undefined): void {
+        this.#liveServer.close(() => {
+            console.log(chalk.magenta(message))
+            console.log(chalk.red(stack))
         })
     }
 
-    #listen(port:number):void {
+    #listen(port: number): void {
         this.#liveServer.listen(port, () => {
-            console.log(`Servidor corriendo en http://localhost:${port}`);
+            console.log(`Watching for file changes with StatReloader\n`);
+            console.log(dateFormater());
+            console.log();
+            console.log(chalk.yellow(`Server runing on `) + chalk.underline.yellow(`http://127.0.0.1:${port}`));
+            console.log("Quit the server with CTRL-BREAK.\n\n");
+            console.log(chalk.bold.yellow(`Still cooking... not ready to serve.`) );
         });
     }
 
-    init(port: number, path:string ){
+    #handlerRequest():void{
+        this.#liveServer.on("request", this.#onRequest.bind(this));
+    }
+
+    init(port: number, path: string): void{
         // here is the hotReload, but first we ned
         this.#listen(port);
+        this.#handlerRequest()
     }
     urlManager(): PathManagerAdapter {
         return new PathManagerAdapter(this.#routerManager);
     }
 
+    
+
 }
 
-const server = Asimilation.server;
-const url = server.urlManager();
+const server: Asimilation = Asimilation.server;
+const url: PathManagerAdapter = server.urlManager();
 export { server, url };

@@ -1,8 +1,6 @@
 {
-    "name": "tu-proyecto",
+    "name": "asimilation",
     "version": "1.0.0",
-    "main": "main.js",
-    "paths": "paths.js",
     "type": "module",
     "description": "",
     "scripts": {
@@ -15,8 +13,8 @@
         "url": "git+https://github.com/juanjh1/Asimilation.git"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "Juan",
+    "license": "MIT",
     "bugs": {
         "url": "https://github.com/juanjh1/Asimilation/issues"
     },

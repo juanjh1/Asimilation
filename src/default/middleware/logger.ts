@@ -1,5 +1,5 @@
 import { MiddlewarePipeline } from "../../core/middleware-manager.js";
-import { createLogger } from "../../utils/logger.js";
+import { createLog } from "../../utils/logger.js";
 
 MiddlewarePipeline.addMiddleware(
     (req, res, next) =>{
@@ -9,7 +9,7 @@ MiddlewarePipeline.addMiddleware(
             let url : string | undefined =  req.url
 
             if(statusCode && method && url){
-                createLogger(statusCode, method, url)  
+                createLog(statusCode, method, url)  
                 next()
                 return;
             }  

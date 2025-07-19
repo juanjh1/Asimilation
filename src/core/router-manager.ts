@@ -6,8 +6,8 @@ import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
 import { ParamType } from '../enums/param-type.js';
-import {ArgumentedIncomingMessage} from "../interfaces/custom-request.js"
-import { StdioNull } from 'child_process';
+import { ArgumentedIncomingMessage } from "../interfaces/custom-request.js"
+
 
 export class RouteManager {
 
@@ -82,14 +82,6 @@ export class RouteManager {
     const descriptor: FunctionDescriptor = this.#buildFunctionDescriptor(params, callback, middlewares)
 
     this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
-    if (!options) {
-      if (!isDynamic) {
-        this.#paths.set(url, methodsMap)
-      } else {
-        this.#dynamicPath.set(this.#urlToRegex(url), methodsMap)
-      }
-      return
-    }
 
     if (!isDynamic) {
       this.#paths.set(url, methodsMap)
@@ -105,7 +97,7 @@ export class RouteManager {
 
     const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
 
-    for (const param of ParamType.values()){
+    for (const param of ParamType.values()) {
       if (param.isTypeEqual(type)) { return param.getRegex(); }
     }
 
@@ -113,7 +105,8 @@ export class RouteManager {
   }
 
   #urlToRegex(url: string): RegExp {
-    const modifiedUrl: string = url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, this.#getRegexForType)
+    const safe = url.replace(/([.*+?^=!${}()|\[\]\/\\])/g, '\\$1');
+    const modifiedUrl: string = "^"+safe.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, this.#getRegexForType)+"$"
     const regex: RegExp = new RegExp(modifiedUrl);
     return regex;
   }
@@ -124,14 +117,14 @@ export class RouteManager {
     const matches: string[] | null = url.match(/<[a-zA-Z]+:[a-zA-Z]+>/g)
     if (!matches) { throw new Error("No parameter matches found") }
 
-    const values = matches.map((value: string) => {return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION]})
+    const values = matches.map((value: string) => { return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION] })
     return values;
   }
 
 
   parsePath(nameSpace: string): string {
 
-    let contextNameSpace: string  = nameSpace
+    let contextNameSpace: string = nameSpace
 
     if (!contextNameSpace.startsWith("/")) { contextNameSpace = "/" + contextNameSpace }
 
@@ -143,7 +136,7 @@ export class RouteManager {
   // i need fix that because i has a big problem indetify the acceptance 
   // dont delete req, reme,hits for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse): void {
-    const  code = 404
+    const code = 404
     res.statusCode = code;
     sendTextMessage(res, "path not found", code)
   }
@@ -172,31 +165,29 @@ export class RouteManager {
     return callback
   }
 
-  #findMatchingDynamicPath(url: string): RegExp | undefined{
-  for (const key of this.#dynamicPath.keys()) {
-    if (key.test(url)) return  key ;
-  }
-    return  undefined;
-  }
-
-
-  #buildParams(routeMap: RouteMap | undefined, method: string, url: string , regex: RegExp | undefined) :{[key: string]: string} {
-      const paramsObject : {[key: string]: string} = {};
-
-      if(!routeMap || !regex) { return paramsObject; }
-
-      const params : string[] = routeMap.get(method)?.params || [];
-      const values : string [] =  regex.exec(url)?.slice(1, params.length+1) || []
-
-      if(values.length !== params.length){ throw new Error("")}
-      
-      params.forEach((param, index) => { paramsObject[param] = values[index]; });
-
-      return paramsObject;
+  #findMatchingDynamicPath(url: string): RegExp | undefined {
+    for (const key of this.#dynamicPath.keys()) {
+      if (key.test(url)) return key;
+    }
+    return undefined;
   }
 
-  #validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined, req: IncomingMessage, res: ServerResponse): 
-  {httpMethodHandlers: RouteMap, method: string}| undefined{
+  #buildParams(routeMap: RouteMap | undefined, method: string, url: string, regex: RegExp | undefined): { [key: string]: string } {
+    const paramsObject: { [key: string]: string } = {};
+
+    if (!routeMap || !regex) { return paramsObject; }
+
+    const params: string[] = routeMap.get(method)?.params || [];
+    const values: string[] = regex.exec(url)?.slice(1, params.length + 1) || []
+
+    if (values.length !== params.length) { throw new Error("") }
+
+    params.forEach((param, index) => { paramsObject[param] = values[index]; });
+
+    return paramsObject;
+  }
+
+  #validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined, req: IncomingMessage, res: ServerResponse): { httpMethodHandlers: RouteMap, method: string } | undefined {
     if (!httpMethodHandlers) {
       this.#handleNotFound(req, res);
       return undefined;
@@ -212,8 +203,9 @@ export class RouteManager {
       return undefined;
     }
 
-    return {httpMethodHandlers, method}
+    return { httpMethodHandlers, method }
   }
+
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
     this.#middlewareManger.run(req, res);
 
@@ -224,28 +216,28 @@ export class RouteManager {
     const isDynamic: RegExp | undefined = this.#findMatchingDynamicPath(url);
 
 
-    const  handler : RouteMap | undefined = isStatic 
-      ? this.#assertHandler(this.#paths.get(url)) 
-      : isDynamic  
-      ? this.#assertHandler(this.#dynamicPath.get(isDynamic))
-      : undefined;
+    const handler: RouteMap | undefined = isStatic
+      ? this.#assertHandler(this.#paths.get(url))
+      : isDynamic
+        ? this.#assertHandler(this.#dynamicPath.get(isDynamic))
+        : undefined;
 
     let validation = this.#validateRoute(handler, method, req, res);
-    
-    if(!validation){
+
+    if (!validation) {
       return
     }
 
-    const {httpMethodHandlers, method: validatedMethod  } = validation;
+    const { httpMethodHandlers, method: validatedMethod } = validation;
     const callback: Controller = this.#assertCallback(req, res, httpMethodHandlers.get(validatedMethod)?.controller);
-    const  paramsForRequest : { [key: string]: string }= this.#buildParams(httpMethodHandlers, validatedMethod, url, isDynamic)
-    const  callbacks: MiddlewareFunction[] = httpMethodHandlers.get(validatedMethod)?.middlewares ?? [];
+    const paramsForRequest: { [key: string]: string } = this.#buildParams(httpMethodHandlers, validatedMethod, url, isDynamic)
+    const callbacks: MiddlewareFunction[] = httpMethodHandlers.get(validatedMethod)?.middlewares ?? [];
 
     this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
-    const newRequest : ArgumentedIncomingMessage= (req as ArgumentedIncomingMessage ) ;
+    const newRequest: ArgumentedIncomingMessage = (req as ArgumentedIncomingMessage);
     newRequest.params = paramsForRequest;
-      
+
     callback(newRequest, res);
     res.statusCode = 200;
 

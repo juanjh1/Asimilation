@@ -1,18 +1,24 @@
-import { readFile } from 'fs/promises';
+import  HasteMap  from 'jest-haste-map';
+import { cpus } from 'os';
+import { asiconf } from '../core/asimilation.config';
+
+import { join} from "path";
+
+const root : string = asiconf.getRoot()
+
+const publicFolder: string = join(root, "public")
 
 
-let htmlFileReguex = /^[a-z_0-9A-Z-]+\.html$/
-
-
-export async function loadHtmlFile (file: string){
-    //if(!htmlFileReguex.test(file)){
-      //  throw new Error("file don't exist")
-    //}
-
-    let content :string =  await readFile(file,{ encoding: 'utf8' });
-    console.log(content)
+const hasteMapOption = {
+     id:"asi-file-core",
+     extensions: ['html'],
+     maxWorkers: cpus().length,
+     name: "asi-file",
+     platforms: [],
+     rootDir: publicFolder,
+     roots: [publicFolder],
+     retainAllFiles: true,
 }
 
 
 
-//loadHtmlFile("../default/template/error.404.html")

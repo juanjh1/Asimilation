@@ -16,7 +16,6 @@ class MiddlewareManager implements MiddlewareManagerI{
 
     
     #runer(middelwareList: MiddlewareFunction [], req: IncomingMessage, res: ServerResponse){
-
          const dispach = (index: number): void => {
                if( middelwareList.length == 0){ return }
                 let current = middelwareList[index]

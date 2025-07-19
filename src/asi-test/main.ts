@@ -7,9 +7,6 @@ import { TestResult } from '../core/type.js';
 import chalk from "chalk"
 
 
-const monda = () =>{
-    
-}
 const root = dirname(fileURLToPath(import.meta.url));
 
 const hasteMapOption = {

@@ -1,7 +1,7 @@
 import {IncomingMessage, ServerResponse} from "http"
 import {ArgumentedIncomingMessage} from "../interfaces/custom-request.js"
 
-type MiddlewareFunction =  (req: IncomingMessage, res: ServerResponse, next: ()=> void) => void;
+type MiddlewareFunction =  (req: IncomingMessage, res: ServerResponse, next: (error?:Error)=> void) => void;
 
 type Controller = (req: ArgumentedIncomingMessage, res: ServerResponse) => void;
 
