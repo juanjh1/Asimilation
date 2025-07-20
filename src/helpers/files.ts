@@ -48,7 +48,7 @@ export class FileManager {
   getiModuleMap(){
     return this.#iModuleMap
   }
-  async getFile(url: string): Promise<string>{
+  async #getFile(url: string): Promise<string>{
 
       for (const dir of this.#dirsWaches) {
             const file: string =join(dir, url)
@@ -62,19 +62,32 @@ export class FileManager {
   }
 
 
+  async template(url:string, context: {[key:string]: any}):Promise<string> {
+
+      const file:string = await this.#getFile(url);
+      const fileNormalized: string = file.replace(/({{\s*[A-Za-z.]+\s*}})/g, (match: string, _: string): string => {
+          const normalized =  match.replace(/[{}\s]/g, "");
+
+          if(/\./.test(normalized)){
+            const relayable = normalized.split(".").reduce((acc, current)=>{
+                return acc[current];
+            }, context)
+
+            return String(relayable)
+          }
+          console.log(normalized)
+          return context[normalized] 
+          
+      })
+
+      console.log(fileNormalized)
+      return file 
+  }
+
+  // serve()
+
+
  onChange(callback: (event: ChangeEvent)=>void){ this.#map.on("change", callback) }
-
-  async #readAndCompress(filePath: string):Promise<Buffer> 
-  {
-        const content  = await fs.promises.readFile(filePath, "utf-8")
-        return new Buffer("hola");
-  }
-
-  async #undCompress(filePath: string):Promise<string> {
-
-    return"hola";
-  }
-
 
 
 }

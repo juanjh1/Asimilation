@@ -9,7 +9,7 @@ const manager: FileManager =  await FileManager.create(asiconf.getRoot(), [asico
 
 //console.log(manager.gethasteFsInstance())
 
-const file = await manager.getFile("public/error/404.html") 
+const file = await manager.template("public/error/404.html", {"plones": {"camacho":"camacho2"}, "platanos": "hola", "calsones":"calsones neiva"}) 
 console.log(file)
 
 manager.onChange((event)=> {
