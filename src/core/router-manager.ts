@@ -21,7 +21,6 @@ export class RouteManager {
     this.#middlewareManger = middlewareManager;
     this.#dynamicPath = new Map();
     this.#paths = new Map();
-
   }
 
   #pathInclude(url: string): boolean {
@@ -71,11 +70,10 @@ export class RouteManager {
 
 
   addPath(url: string, callback: Controller, kwargs?: PathKwargs): void {
-
     url = this.parsePath(url)
+
     const middlewares: MiddlewareFunction[] = kwargs?.handlers ?? [];
     const incomngMethods: string[] = kwargs?.methods ?? [];
-    const options: PathKwargs | undefined = kwargs
     const methodsMap: RouteMap = new Map()
     const isDynamic: boolean = /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url);
     const params = isDynamic ? this.#extractParamName(url) : [];
@@ -219,8 +217,8 @@ export class RouteManager {
     const handler: RouteMap | undefined = isStatic
       ? this.#assertHandler(this.#paths.get(url))
       : isDynamic
-        ? this.#assertHandler(this.#dynamicPath.get(isDynamic))
-        : undefined;
+      ? this.#assertHandler(this.#dynamicPath.get(isDynamic))
+      : undefined;
 
     let validation = this.#validateRoute(handler, method, req, res);
 

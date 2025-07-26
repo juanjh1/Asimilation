@@ -2,7 +2,6 @@ import chalk from "chalk"
 import { dateFormater } from "./date-utils.js";
 
 
-
 const statusColorMap: Map<number, chalk.ChalkFunction> = new Map([
   [100, chalk.yellow],
   [200, chalk.green],
@@ -19,7 +18,6 @@ export const createLog = (status: number, method: string, path: string): void =>
               )
 };
 
-
 function codeTo(code: number):chalk.ChalkFunction {
 
     const normalizedCode: number = Math.floor(code / 100) * 100
@@ -34,4 +32,3 @@ function codeTo(code: number):chalk.ChalkFunction {
 function showLoggin(callback: chalk.ChalkFunction, log: string){
     console.log(callback(log))
 }
-

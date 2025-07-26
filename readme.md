@@ -8,7 +8,7 @@ Its structure and design don’t always follow conventional JS patterns — they
 
 ---
 
-## 🧠 Why I Built This
+##  Why I Built This
 
 Asimilation is also the project where I began my **TypeScript journey**.
 
@@ -20,18 +20,14 @@ That’s when I decided to migrate everything to TypeScript — and use this pro
 
 I also have another personal project written in **Tkinter (Python)**, which I want to migrate to **Electron**. So, learning TypeScript now gives me a solid foundation for that transition, and helps me get closer to learning **React** as well.
 
-> Was it hard?  
-> Absolutely. But learning isn't about whether you "know TypeScript or not" — it’s about building experience as a programmer.  
-> A good engineer isn't defined by the language they use, but by their mindset and adaptability.  
-> That’s why I believe a solid developer should be **language-agnostic**.
 
 ---
 
-> **Status:** 🚧 This project is under active development and may not work properly yet. Expect bugs and incomplete features.
+> **Status:**  This project is under active development and may not work properly yet. Expect bugs and incomplete features.
 
 ---
 
-## ✨ Features
+##  Features
 
 - ✅ **Custom Routing System** — Inspired by Django, with a `Paths` class to manage URL patterns and views.
 - ✅ **Native HTTP Server** — Built on Node.js’s `http` module for full control and educational value.
@@ -42,7 +38,7 @@ I also have another personal project written in **Tkinter (Python)**, which I wa
 - ✅ **Educational Focus** — The code is well-commented and designed to be hackable and understandable for junior developers (like me fr).
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```bash
 C:.
@@ -85,18 +81,19 @@ C:.
                 stack.ts
 ```
 
-## 🚀 Getting Started
+##  Getting Started
 Install Node.js (v18+ recommended)
 
 Clone this repository
 
 Run the server:
 ```
-npx tsx run.ts
+npm run start
 Open http://localhost:3000 in your browser
 ```
 
-## ⚙️ How It Works
+##  How It Works
+
 Routes and views are defined in urls.ts and views.ts
 
 The server listens for HTTP requests and matches the URL to registered routes
@@ -107,10 +104,15 @@ If a match is found, the associated controller/view is executed
 
 Responses are logged with color-coded status codes for clarit<<y
 
-## ❓ Why “Asimilation”?
+##  Why “Asimilation”?
+
 This project is a living record of my backend learning journey, as I "assimilate" new concepts and best practices.
 It’s designed to be simple, educational, and a solid foundation for future experiments.
 
-## 💬 Made by a junior — for juniors.
+## }Made by a junior — for juniors.
+
 Feel free to explore the code, learn from it, and even contribute.
 My goal is to keep building and learning — one line of TypeScript at a time.
+
+
+![Server runing](./public/repo/server-runing.png)

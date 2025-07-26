@@ -5,6 +5,9 @@ import { Stats } from "fs";
 
 type MiddlewareFunction =  (req: IncomingMessage, res: ServerResponse, next: (error?:Error)=> void) => void;
 
+
+type MiddlewareFunctionAsync = (req: IncomingMessage, res: ServerResponse, next: (error?:Error)=> void) => Promise<void>;
+
 type Controller = (req: ArgumentedIncomingMessage, res: ServerResponse) => void;
 
 type PathKwargs = { methods?: string[], handlers?: MiddlewareFunction[] };
@@ -40,7 +43,6 @@ type EventsQueue = Array<{
 }>;
 
 
-
 export type ChangeEvent = {
   eventsQueue: EventsQueue;
   hasteFS: IHasteFS;
@@ -51,6 +53,7 @@ type TestResult = {success : boolean, errorMessage: string | null }
 
 export {
         MiddlewareFunction, 
+        MiddlewareFunctionAsync,
         Controller, 
         PathKwargs, 
         ControllerRegistry,  
@@ -59,5 +62,5 @@ export {
         ParamControllerRegistry,
         FunctionDescriptor,
         OptionsBasic
-             }
+      }
 

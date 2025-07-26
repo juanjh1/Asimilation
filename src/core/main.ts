@@ -75,6 +75,8 @@ class Asimilation {
         this.#listen(port);
         this.#handlerRequest()
     }
+
+    
     urlManager(): PathManagerAdapter {
         return new PathManagerAdapter(this.#routerManager);
     }

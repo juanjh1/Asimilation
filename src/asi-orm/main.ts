@@ -1,0 +1,9 @@
+
+function Entity(){
+
+}
+
+
+class Session{
+
+}

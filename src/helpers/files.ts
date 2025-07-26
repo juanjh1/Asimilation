@@ -85,8 +85,6 @@ export class FileManager {
   }
 
   // serve()
-
-
  onChange(callback: (event: ChangeEvent)=>void){ this.#map.on("change", callback) }
 
 
