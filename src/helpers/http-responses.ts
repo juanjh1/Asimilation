@@ -7,7 +7,7 @@ function sendResponse(res: ServerResponse , data: any,  options:{code:number, co
 }
 
 export function sendJsonMessage(res: ServerResponse, json: Object, code: number) {
-    const messaje: string = JSON.stringify(json);
+    const messaje: string = JSON.stringify(json, null, 2);
     sendResponse(res,messaje, {code, contentType: 'application/json'  } )
 }
 

@@ -7,18 +7,17 @@ import "../middlewares.js";
 import "../default/middleware/logger.js";
 import { ParamType } from '../enums/param-type.js';
 import { ArgumentedIncomingMessage } from "../interfaces/custom-request.js"
+import { RouteManagerI } from "../interfaces/route-manager.js"
 
-
-export class RouteManager {
+export class RouteManager implements RouteManagerI{
 
   #paths: ControllerRegistry;
   #dynamicPath: ParamControllerRegistry;
   #middlewareManger: MiddlewareManagerI;
-  // #pathsWhitParams : string;
-
-  constructor(middlewareManager: MiddlewareManagerI) {
-    // we use map/ thats works because each endpoint it's unique
-    this.#middlewareManger = middlewareManager;
+  // need move to radex actualy is O(1) average 
+  //but whit radex tree we can reduce to O(k)
+  constructor(middlewareManager: MiddlewareManagerI)  {
+    this.#middlewareManger = middlewareManager ;
     this.#dynamicPath = new Map();
     this.#paths = new Map();
   }
@@ -50,7 +49,6 @@ export class RouteManager {
       this.#validateMethod(method)
       return method
     })
-
     this.#basicRegisterMethods(contextIncomngMethods, methodsMap, functionDescriptor)
   }
 
@@ -65,17 +63,22 @@ export class RouteManager {
 
 
   #buildFunctionDescriptor(params: string[], controller: Controller, middlewares: MiddlewareFunction[]): FunctionDescriptor {
-    return { params, controller, middlewares }
+	return { params, controller, middlewares }
+  }
+ 
+  #containsParams(url: string): boolean{
+	return /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url)
   }
 
 
   addPath(url: string, callback: Controller, kwargs?: PathKwargs): void {
+    
     url = this.parsePath(url)
 
     const middlewares: MiddlewareFunction[] = kwargs?.handlers ?? [];
     const incomngMethods: string[] = kwargs?.methods ?? [];
-    const methodsMap: RouteMap = new Map()
-    const isDynamic: boolean = /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url);
+    const methodsMap: RouteMap = new Map();
+    const isDynamic: boolean  = this.#containsParams(url);
     const params = isDynamic ? this.#extractParamName(url) : [];
     const descriptor: FunctionDescriptor = this.#buildFunctionDescriptor(params, callback, middlewares)
 
@@ -96,26 +99,34 @@ export class RouteManager {
     const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
 
     for (const param of ParamType.values()) {
+	
       if (param.isTypeEqual(type)) { return param.getRegex(); }
     }
 
     throw new Error("Type is don't defined")
   }
-
+  
+  #create_regex_string(url: string): string{
+ 	return "^" + url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, this.#getRegexForType) + "$" 
+  }
+  
   #urlToRegex(url: string): RegExp {
     const safe = url.replace(/([.*+?^=!${}()|\[\]\/\\])/g, '\\$1');
-    const modifiedUrl: string = "^"+safe.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, this.#getRegexForType)+"$"
+    const modifiedUrl: string = this.#create_regex_string(safe)
     const regex: RegExp = new RegExp(modifiedUrl);
     return regex;
   }
 
   #extractParamName(url: string): string[] {
+    
     const NAME_LOCATION = 1
 
     const matches: string[] | null = url.match(/<[a-zA-Z]+:[a-zA-Z]+>/g)
+    
     if (!matches) { throw new Error("No parameter matches found") }
 
     const values = matches.map((value: string) => { return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION] })
+    
     return values;
   }
 
@@ -130,40 +141,53 @@ export class RouteManager {
 
     return contextNameSpace;
   }
+   
+  #sendMessage(req: IncomingMessage, res: ServerResponse ,code: number, message: string):void{
+	
+	const accept: string = req.headers.accept ?? ""
+		
+  }
 
   // i need fix that because i has a big problem indetify the acceptance 
   // dont delete req, reme,hits for the acceptance 
   #handleNotFound(req: IncomingMessage, res: ServerResponse): void {
     const code = 404
     res.statusCode = code;
-    sendTextMessage(res, "path not found", code)
+    this.#sendMessage(req, res, code, "path not found")
   }
 
   #assertHandler(path: RouteMap | undefined): RouteMap {
-    if (path === undefined) {
-      throw new Error("The path is not working properly")
-    }
-    return path
+
+    	if (path === undefined) {
+		throw new Error("The path is not working properly")
+    	}
+    	return path
   }
 
   #assertMethod(req: IncomingMessage, res: ServerResponse): void {
     const code = 400;
     res.statusCode = code;
-    sendTextMessage(res, "Your reques comming whiout a method", code)
+    this.#sendMessage(req, res, code, "Your reques comming whiout a method")
   }
 
   #assertCallback(req: IncomingMessage, res: ServerResponse, callback: undefined | Controller): Controller {
-    const code = 500;
+    
+    const code: number = 500;
+    
     if (callback === undefined) {
-      sendTextMessage(res, "Internal server error", code)
+     
+      this.#sendMessage(req,res, code,"Internal server error" ) 
       res.statusCode = code;
+      
       throw new Error("Callback can't be Undefined ")
+    
     }
 
     return callback
   }
 
   #findMatchingDynamicPath(url: string): RegExp | undefined {
+    
     for (const key of this.#dynamicPath.keys()) {
       if (key.test(url)) return key;
     }
@@ -176,6 +200,7 @@ export class RouteManager {
     if (!routeMap || !regex) { return paramsObject; }
 
     const params: string[] = routeMap.get(method)?.params || [];
+    
     const values: string[] = regex.exec(url)?.slice(1, params.length + 1) || []
 
     if (values.length !== params.length) { throw new Error("") }
@@ -186,22 +211,25 @@ export class RouteManager {
   }
 
   #validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined, req: IncomingMessage, res: ServerResponse): { httpMethodHandlers: RouteMap, method: string } | undefined {
-    if (!httpMethodHandlers) {
-      this.#handleNotFound(req, res);
-      return undefined;
-    }
-
+    
     if (!method) {
       this.#assertMethod(req, res);
       return undefined;
     }
 
-    if (!httpMethodHandlers.has(method)) {
+    if (!httpMethodHandlers || !httpMethodHandlers.has(method)) {
       this.#handleNotFound(req, res);
       return undefined;
     }
-
     return { httpMethodHandlers, method }
+  }
+
+  #getHandler(url: string, regexUrl: RegExp | undefined, isStatic: boolean):RouteMap | undefined{
+	return  isStatic
+      ? this.#assertHandler(this.#paths.get(url))
+      : regexUrl
+      ? this.#assertHandler(this.#dynamicPath.get(regexUrl))
+      : undefined;
   }
 
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
@@ -209,17 +237,10 @@ export class RouteManager {
 
     const url: string | undefined = req.url ?? "";
     const method: string | undefined = req.method;
-
     const isStatic: boolean = this.#pathInclude(url);
     const isDynamic: RegExp | undefined = this.#findMatchingDynamicPath(url);
-
-
-    const handler: RouteMap | undefined = isStatic
-      ? this.#assertHandler(this.#paths.get(url))
-      : isDynamic
-      ? this.#assertHandler(this.#dynamicPath.get(isDynamic))
-      : undefined;
-
+    const handler: RouteMap | undefined = this.#getHandler(url, isDynamic, isStatic)
+    
     let validation = this.#validateRoute(handler, method, req, res);
 
     if (!validation) {
@@ -227,18 +248,22 @@ export class RouteManager {
     }
 
     const { httpMethodHandlers, method: validatedMethod } = validation;
+    
     const callback: Controller = this.#assertCallback(req, res, httpMethodHandlers.get(validatedMethod)?.controller);
+    
     const paramsForRequest: { [key: string]: string } = this.#buildParams(httpMethodHandlers, validatedMethod, url, isDynamic)
+    
     const callbacks: MiddlewareFunction[] = httpMethodHandlers.get(validatedMethod)?.middlewares ?? [];
 
     this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
     const newRequest: ArgumentedIncomingMessage = (req as ArgumentedIncomingMessage);
+    
     newRequest.params = paramsForRequest;
-
+    
+    if(res.writableEnded) return;
+    
     callback(newRequest, res);
-    res.statusCode = 200;
-
   }
 
   createRouteModule(initialPath: string): RouteModule {
@@ -248,6 +273,7 @@ export class RouteManager {
 }
 
 export class RouteModule {
+
   #manager: RouteManager;
   #initialPath: string;
 

@@ -1,12 +1,14 @@
 import {IncomingMessage, ServerResponse} from "http"
-import {ArgumentedIncomingMessage} from "../interfaces/custom-request.js"
 import  {  IHasteFS,IModuleMap, }  from 'jest-haste-map';
 import { Stats } from "fs";
+import { TokenType } from "../enums/lexer.js";
+import { ArgumentedIncomingMessage} from "../interfaces/custom-request.js"
 
-type MiddlewareFunction =  (req: IncomingMessage, res: ServerResponse, next: (error?:Error)=> void) => void;
-
+type MiddlewareFunction =  (req: ArgumentedIncomingMessage, res: ServerResponse, next: (error?:Error)=> void) => void;
 
 type MiddlewareFunctionAsync = (req: IncomingMessage, res: ServerResponse, next: (error?:Error)=> void) => Promise<void>;
+
+type BasicController =  (req: IncomingMessage, res: ServerResponse) => void;
 
 type Controller = (req: ArgumentedIncomingMessage, res: ServerResponse) => void;
 
@@ -37,17 +39,29 @@ type OptionsBasic = {
 
 
 type EventsQueue = Array<{
-  filePath: string;
-  stat: Stats | undefined;
-  type: string;
+	  filePath: string;
+	  stat: Stats | undefined;
+	  type: string;
 }>;
 
 
 export type ChangeEvent = {
-  eventsQueue: EventsQueue;
-  hasteFS: IHasteFS;
-  moduleMap: IModuleMap;
+  	eventsQueue: EventsQueue;
+  	hasteFS: IHasteFS;
+  	moduleMap: IModuleMap;
 };
+
+
+export type routeToken = {
+  	type:string,
+  	token: string|RegExp
+}
+
+export type Token= {
+   type:TokenType,
+   value: string,
+}
+
 
 type TestResult = {success : boolean, errorMessage: string | null }
 
@@ -61,6 +75,7 @@ export {
         TestResult, 
         ParamControllerRegistry,
         FunctionDescriptor,
-        OptionsBasic
+        OptionsBasic, 
+	BasicController
       }
 

@@ -1,9 +1,14 @@
+export function entity (name?: string):Function{
 
-function Entity(){
-
+	return function <T extends new (...args: any[]) => {}>(constructor: T){
+		
+		let tableName: string; 
+		
+		if (name == null){
+			tableName = constructor.name
+		}else{
+			tableName = name
+		}
+	}
 }
 
-
-class Session{
-
-}
