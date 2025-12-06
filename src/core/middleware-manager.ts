@@ -1,7 +1,7 @@
 import {IncomingMessage, ServerResponse} from "http"
 import { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
 import { MiddlewareFunction, MiddlewareFunctionAsync } from "./type.js";
-import { ArgumentedIncomingMessage} from "../interfaces/custom-request.js";
+import { ArgumentedIncomingMessageAbc } from "../abstract/abstract_res.js";
 
 class MiddlewareManager implements MiddlewareManagerI{
 	
@@ -20,7 +20,7 @@ class MiddlewareManager implements MiddlewareManagerI{
 
 	}
 	
-	#runer(middelwareList: (MiddlewareFunction| MiddlewareFunctionAsync) [], req: ArgumentedIncomingMessage, res: ServerResponse): void{
+	#runer(middelwareList: (MiddlewareFunction| MiddlewareFunctionAsync) [], req: ArgumentedIncomingMessageAbc, res: ServerResponse): void{
 		
 		const dispach = (index: number): void => {
 			
@@ -31,20 +31,19 @@ class MiddlewareManager implements MiddlewareManagerI{
 			if(current){
 				current(req, res, ()=>{dispach(index+1)})
 			}
-		
 		}
         	dispach(0);
 	}
 
 
-	run(req: ArgumentedIncomingMessage , res: ServerResponse) :  {req: ArgumentedIncomingMessage, res: ServerResponse}{
+	run(req: ArgumentedIncomingMessageAbc , res: ServerResponse) :  {req: ArgumentedIncomingMessageAbc, res: ServerResponse}{
 		
 		this.#runer(this.#middelwares, req, res)
 		
 		return {req, res}
 	}
 
-	runRouteMiddlewares(req: ArgumentedIncomingMessage, res: ServerResponse, middelwareList: (MiddlewareFunction | MiddlewareFunctionAsync) []): {req: ArgumentedIncomingMessage, res: ServerResponse}
+	runRouteMiddlewares(req: ArgumentedIncomingMessageAbc, res: ServerResponse, middelwareList: (MiddlewareFunction | MiddlewareFunctionAsync) []): {req: ArgumentedIncomingMessageAbc, res: ServerResponse}
 
 	{
         	this.#runer(middelwareList, req, res)
@@ -59,4 +58,5 @@ class MiddlewareManager implements MiddlewareManagerI{
 }
 
 
+		
 export const MiddlewarePipeline = MiddlewareManager.instance;

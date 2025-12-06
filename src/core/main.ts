@@ -2,7 +2,7 @@ import { ServerResponse } from 'http';
 import { RouteManager, RouteModule } from './router-manager.js';
 import { MiddlewarePipeline } from './middleware-manager.js';
 import { PathKwargs } from './type.js';
-import { ArgumentedIncomingMessage } from '../interfaces/custom-request.js';
+import { ArgumentedIncomingMessageAbc } from '../abstract/abstract_res.js';
 import { RouteManagerI } from '../interfaces/route-manager.js';
 import {AsimilationServer} from "./asi_server.js"
 
@@ -14,7 +14,7 @@ class PathManagerAdapter {
         this.#pathManager = pathManager
     }
 
-    addPath(name: string, callback: (req: ArgumentedIncomingMessage, res: ServerResponse) => void, kwargs?: PathKwargs) {
+    addPath(name: string, callback: (req: ArgumentedIncomingMessageAbc, res: ServerResponse) => void, kwargs?: PathKwargs) {
         this.#pathManager.addPath(name, callback, kwargs);
     }
 

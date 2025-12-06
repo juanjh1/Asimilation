@@ -6,7 +6,7 @@ import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
 import { ParamType } from '../enums/param-type.js';
-import { ArgumentedIncomingMessage } from "../interfaces/custom-request.js"
+import { ArgumentedIncomingMessageAbc  } from "../abstract/abstract_res.js"
 import { RouteManagerI } from "../interfaces/route-manager.js"
 
 export class RouteManager implements RouteManagerI{
@@ -14,8 +14,10 @@ export class RouteManager implements RouteManagerI{
   #paths: ControllerRegistry;
   #dynamicPath: ParamControllerRegistry;
   #middlewareManger: MiddlewareManagerI;
+  
   // need move to radex actualy is O(1) average 
   //but whit radex tree we can reduce to O(k)
+  
   constructor(middlewareManager: MiddlewareManagerI)  {
     this.#middlewareManger = middlewareManager ;
     this.#dynamicPath = new Map();
@@ -233,6 +235,7 @@ export class RouteManager implements RouteManagerI{
   }
 
   controlerHadler(req: IncomingMessage, res: ServerResponse): void {
+    
     this.#middlewareManger.run(req, res);
 
     const url: string | undefined = req.url ?? "";
@@ -257,7 +260,9 @@ export class RouteManager implements RouteManagerI{
 
     this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
-    const newRequest: ArgumentedIncomingMessage = (req as ArgumentedIncomingMessage);
+    Object.setPrototypeOf(req, ArgumentedIncomingMessageAbc.prototype)
+
+    const newRequest: ArgumentedIncomingMessageAbc = (req as ArgumentedIncomingMessageAbc);
     
     newRequest.params = paramsForRequest;
     
@@ -267,7 +272,9 @@ export class RouteManager implements RouteManagerI{
   }
 
   createRouteModule(initialPath: string): RouteModule {
-    return new RouteModule(this, initialPath)
+    
+	return new RouteModule(this, initialPath)
+  
   }
 
 }

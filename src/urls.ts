@@ -1,18 +1,13 @@
 import { url } from "./core/main.js";
 import { RouteModule } from "./core/router-manager.js";
-import {IncomingMessage, ServerResponse} from "http";
-import { ParamType } from "./enums/param-type.js";
 import { redirect } from "./helpers/http-responses.js";
 import { sendJsonMessage} from "./helpers/http-responses.js"
 
-url.addPath("", (req, res) => {
-   	
+url.addPath("", (req, res) => {	
+	
 	console.log(req.params)
 
-	//
-    res.end(JSON.stringify({"hola":"hello"} ));
-
-   	//sendJsonMessage(res, {message: "WElCOME TO ASIMILATION FM"},200);
+	req.sendJson(res, {data:"hi"}, 200)
 })
 
 url.addPath("api", (req, res) => {
@@ -31,7 +26,7 @@ url.addPath("auth/<string:id>/", (req, res) => {
     console.log(req.params)
     res.end(JSON.stringify("hola" ));
 },
-{
+{ 
  "methods":["GET", "POST"],
  "handlers":[
     (req, res, next) =>{
@@ -45,7 +40,8 @@ url.addPath("auth/<string:id>/", (req, res) => {
 
     }
  ]
-})
+}
+)
 
 
 url.addPath("user/products/<boolean:isAdmin>/", (req, res) => {
@@ -62,10 +58,10 @@ let admin: RouteModule = url.createRouteModule("/admin")
 admin.addPath("pablo", (req, res)=>{
      res.end(JSON.stringify({ message: "HEY" }));
 },
-{handlers:[(req: IncomingMessage, 
-	    res: ServerResponse, next: ()=> void) => {
+{handlers:[(req, res, next: ()=> void) => {
+		
 		console.log("middleware interno solo de mi funcio")
-    next()
+		next()
 	}
 ]
 
