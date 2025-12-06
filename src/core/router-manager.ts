@@ -1,13 +1,21 @@
 import { IncomingMessage, ServerResponse, METHODS } from 'http';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
 import { MiddlewareFunction, PathKwargs, ControllerRegistry, RouteMap, ParamControllerRegistry, FunctionDescriptor } from './type.js';
-import { sendTextMessage } from '../helpers/http-responses.js';
 import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
-import { ParamType } from '../enums/param-type.js';
 import { ArgumentedIncomingMessageAbc  } from "../abstract/abstract_res.js"
 import { RouteManagerI } from "../interfaces/route-manager.js"
+import  { 
+	  hasTypeParams, 
+	  normalizePath, 
+	  extractParamsNames, 
+	  compiledUrlPattern
+} 
+from "../helpers/url-regex.js"
+
+
+
 
 export class RouteManager implements RouteManagerI{
 
@@ -68,81 +76,30 @@ export class RouteManager implements RouteManagerI{
 	return { params, controller, middlewares }
   }
  
-  #containsParams(url: string): boolean{
-	return /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url)
-  }
-
 
   addPath(url: string, callback: Controller, kwargs?: PathKwargs): void {
     
-    url = this.parsePath(url)
+    url = normalizePath(url)
 
-    const middlewares: MiddlewareFunction[] = kwargs?.handlers ?? [];
-    const incomngMethods: string[] = kwargs?.methods ?? [];
-    const methodsMap: RouteMap = new Map();
-    const isDynamic: boolean  = this.#containsParams(url);
-    const params = isDynamic ? this.#extractParamName(url) : [];
-    const descriptor: FunctionDescriptor = this.#buildFunctionDescriptor(params, callback, middlewares)
+    const middlewares 	 : MiddlewareFunction[] = kwargs?.handlers ?? [];
+    const incomngMethods : string [] 		= kwargs?.methods ?? [];
+    const methodsMap	 : RouteMap 		= new Map();
+    const isDynamic  	 : boolean  		= hasTypeParams(url);
+    const params	 : string [] 		= isDynamic ? extractParamsNames(url) : [];
+    const descriptor	 : FunctionDescriptor 	= this.#buildFunctionDescriptor(params, callback, middlewares)
 
     this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
 
     if (!isDynamic) {
+
       this.#paths.set(url, methodsMap)
       return
+    
     }
-    this.#dynamicPath.set(this.#urlToRegex(url), methodsMap)
-
-  }
-
-
-  #getRegexForType(match: string, _: string): string {
-    const TYPE_LOCATION: number = 0
-
-    const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
-
-    for (const param of ParamType.values()) {
-	
-      if (param.isTypeEqual(type)) { return param.getRegex(); }
-    }
-
-    throw new Error("Type is don't defined")
-  }
-  
-  #create_regex_string(url: string): string{
- 	return "^" + url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, this.#getRegexForType) + "$" 
-  }
-  
-  #urlToRegex(url: string): RegExp {
-    const safe = url.replace(/([.*+?^=!${}()|\[\]\/\\])/g, '\\$1');
-    const modifiedUrl: string = this.#create_regex_string(safe)
-    const regex: RegExp = new RegExp(modifiedUrl);
-    return regex;
-  }
-
-  #extractParamName(url: string): string[] {
     
-    const NAME_LOCATION = 1
-
-    const matches: string[] | null = url.match(/<[a-zA-Z]+:[a-zA-Z]+>/g)
-    
-    if (!matches) { throw new Error("No parameter matches found") }
-
-    const values = matches.map((value: string) => { return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION] })
-    
-    return values;
+    this.#dynamicPath.set(compiledUrlPattern(url), methodsMap)
   }
 
-
-  parsePath(nameSpace: string): string {
-
-    let contextNameSpace: string = nameSpace
-
-    if (!contextNameSpace.startsWith("/")) { contextNameSpace = "/" + contextNameSpace }
-
-    contextNameSpace = contextNameSpace.replace(/\/+/g, "/");
-
-    return contextNameSpace;
-  }
    
   #sendMessage(req: IncomingMessage, res: ServerResponse ,code: number, message: string):void{
 	
@@ -238,11 +195,11 @@ export class RouteManager implements RouteManagerI{
     
     this.#middlewareManger.run(req, res);
 
-    const url: string | undefined = req.url ?? "";
-    const method: string | undefined = req.method;
-    const isStatic: boolean = this.#pathInclude(url);
-    const isDynamic: RegExp | undefined = this.#findMatchingDynamicPath(url);
-    const handler: RouteMap | undefined = this.#getHandler(url, isDynamic, isStatic)
+    const url		: string   | undefined 	= req.url ?? "";
+    const method	: string   | undefined 	= req.method;
+    const isStatic	: boolean 	     	= this.#pathInclude(url);
+    const isDynamic	: RegExp   | undefined 	= this.#findMatchingDynamicPath(url);
+    const handler	: RouteMap | undefined  = this.#getHandler(url, isDynamic, isStatic)
     
     let validation = this.#validateRoute(handler, method, req, res);
 
@@ -286,16 +243,15 @@ export class RouteModule {
 
   constructor(manager: RouteManager, nameSpace: string) {
     this.#manager = manager;
-    this.#initialPath = this.#manager.parsePath(nameSpace);
+    this.#initialPath = normalizePath(nameSpace);
   }
 
   addPath(path: string, callback: Controller, kwargs?: PathKwargs) {
-    const contextPath = this.#initialPath + this.#manager.parsePath(path)
+    const contextPath = this.#initialPath + normalizePath(path)
     this.#manager.addPath(contextPath, callback, kwargs)
   }
 
   createRouteModule(name: string) {
-    return new RouteModule(this.#manager, (this.#initialPath + this.#manager.parsePath(name)))
+    return new RouteModule(this.#manager, (this.#initialPath + normalizePath(name)))
   }
-
 }

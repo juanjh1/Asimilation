@@ -19,6 +19,3 @@ abstract class abstractAccept<I,O> implements StrategyIf<I,O>{
 
 }
 
-
-
-
