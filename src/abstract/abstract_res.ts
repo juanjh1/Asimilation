@@ -1,23 +1,21 @@
-import { ArgumentedIncomingMessage } from "../interfaces/custom-request.js"
+import { ArgumentedServerResponse } from "../interfaces/custom-server-response.js"
 import { sendJsonMessage, sendTextMessage, redirect as redirectFn } from "../helpers/http-responses.js"
-import  {ServerResponse,IncomingMessage } from "http";
+import  {ServerResponse } from "http";
 
-
-
-export abstract class ArgumentedIncomingMessageAbc extends IncomingMessage implements ArgumentedIncomingMessage {
+export abstract class ArgumentedServerResponseAbc extends ServerResponse implements ArgumentedServerResponse{
 	
-	params!: Record<string,string>
-
-	sendJson(res:ServerResponse, json: Object, code: number ){
-		sendJsonMessage(res, json, code)
+	sendJson( json: Object, code: number ): void{
+		
+		sendJsonMessage(this, json, code)
 	}	
 	
-	sendText(res:ServerResponse, text: string, code: number ){
-		sendTextMessage(res, text, code)
+	sendText( text: string, code: number ): void{
+		
+		sendTextMessage(this, text, code)
 	}
 
-	redirect(res: ServerResponse, url: string, code: number = 302){
-		redirectFn(res, url, code)
+	redirect( url: string, code: number = 302){
+		
+		redirectFn(this, url, code)
 	}
-
-} 
+}

@@ -4,15 +4,16 @@ import { MiddlewareFunction, PathKwargs, ControllerRegistry, RouteMap, ParamCont
 import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
-import { ArgumentedIncomingMessageAbc  } from "../abstract/abstract_res.js"
-import { RouteManagerI } from "../interfaces/route-manager.js"
+import { ArgumentedIncomingMessageAbc  } from "../abstract/abstract_req.js";
+import { RouteManagerI } from "../interfaces/route-manager.js";
+import { ArgumentedServerResponseAbc  } from "../abstract/abstract_res.js"
 import  { 
 	  hasTypeParams, 
 	  normalizePath, 
 	  extractParamsNames, 
 	  compiledUrlPattern
 } 
-from "../helpers/url-regex.js"
+from "../helpers/url-regex.js";
 
 
 
@@ -217,15 +218,16 @@ export class RouteManager implements RouteManagerI{
 
     this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
-    Object.setPrototypeOf(req, ArgumentedIncomingMessageAbc.prototype)
+    Object.setPrototypeOf(req, ArgumentedIncomingMessageAbc.prototype);
+    Object.setPrototypeOf(res, ArgumentedServerResponseAbc.prototype )
 
-    const newRequest: ArgumentedIncomingMessageAbc = (req as ArgumentedIncomingMessageAbc);
-    
+    const newRequest  : ArgumentedIncomingMessageAbc = (req as ArgumentedIncomingMessageAbc);
+    const newResponse : ArgumentedServerResponseAbc = (res as ArgumentedServerResponseAbc)
     newRequest.params = paramsForRequest;
     
     if(res.writableEnded) return;
     
-    callback(newRequest, res);
+    callback(newRequest,  newResponse);
   }
 
   createRouteModule(initialPath: string): RouteModule {

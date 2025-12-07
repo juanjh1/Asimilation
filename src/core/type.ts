@@ -2,15 +2,16 @@ import {IncomingMessage, ServerResponse} from "http"
 import  {  IHasteFS,IModuleMap, }  from 'jest-haste-map';
 import { Stats } from "fs";
 import { TokenType } from "../enums/lexer.js";
-import { ArgumentedIncomingMessageAbc} from "../abstract/abstract_res.js"
+import { ArgumentedIncomingMessageAbc} from "../abstract/abstract_req.js"
+import { ArgumentedServerResponseAbc } from "../abstract/abstract_res.js";
 
-type MiddlewareFunction =  (req: ArgumentedIncomingMessageAbc, res: ServerResponse, next: (error?:Error)=> void) => void;
+type MiddlewareFunction =  (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc, next: (error?:Error)=> void) => void;
 
-type MiddlewareFunctionAsync = (req: ArgumentedIncomingMessageAbc, res: ServerResponse, next: (error?:Error)=> void) => Promise<void>;
+type MiddlewareFunctionAsync = (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc , next: (error?:Error)=> void) => Promise<void>;
 
 type BasicController =  (req: IncomingMessage, res: ServerResponse) => void;
 
-type Controller = (req: ArgumentedIncomingMessageAbc, res: ServerResponse) => void;
+type Controller = (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc) => void;
 
 type PathKwargs = { methods?: string[], handlers?: MiddlewareFunction[] };
 

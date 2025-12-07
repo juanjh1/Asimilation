@@ -15,12 +15,7 @@ export class AsimilationServer extends http.Server {
     }
 
     #onRequest(req: IncomingMessage, res: ServerResponse) :void{
-        try { this.#callback(req, res); }
-        catch (err) {
-	    console.log(err)
-            if (err instanceof Error) { this.#close(err.message, err.stack) }
-            sendJsonMessage(res, { message: 'Internal Server error' }, 500)
-        }
+        this.#callback(req, res);
     }
     
     #close(message: string, stack: string | undefined): void {

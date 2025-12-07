@@ -1,7 +1,8 @@
 import {IncomingMessage, ServerResponse} from "http"
 import { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
 import { MiddlewareFunction, MiddlewareFunctionAsync } from "./type.js";
-import { ArgumentedIncomingMessageAbc } from "../abstract/abstract_res.js";
+import { ArgumentedIncomingMessageAbc } from "../abstract/abstract_req.js";
+import { ArgumentedServerResponseAbc  } from "../abstract/abstract_res.js"
 
 class MiddlewareManager implements MiddlewareManagerI{
 	
@@ -20,7 +21,7 @@ class MiddlewareManager implements MiddlewareManagerI{
 
 	}
 	
-	#runer(middelwareList: (MiddlewareFunction| MiddlewareFunctionAsync) [], req: ArgumentedIncomingMessageAbc, res: ServerResponse): void{
+	#runer(middelwareList: ( MiddlewareFunction | MiddlewareFunctionAsync ) [], req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc): void{
 		
 		const dispach = (index: number): void => {
 			
@@ -28,22 +29,24 @@ class MiddlewareManager implements MiddlewareManagerI{
 			
 			let current = middelwareList[index]
                 	
-			if(current){
-				current(req, res, ()=>{dispach(index+1)})
+			if ( current ) {
+				current( req, res, ()=>{ 
+					dispach(index+1)
+				    }
+				)
 			}
 		}
         	dispach(0);
 	}
 
-
-	run(req: ArgumentedIncomingMessageAbc , res: ServerResponse) :  {req: ArgumentedIncomingMessageAbc, res: ServerResponse}{
+	run(req: ArgumentedIncomingMessageAbc , res: ArgumentedServerResponseAbc) :  {req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc}{
 		
 		this.#runer(this.#middelwares, req, res)
 		
 		return {req, res}
 	}
 
-	runRouteMiddlewares(req: ArgumentedIncomingMessageAbc, res: ServerResponse, middelwareList: (MiddlewareFunction | MiddlewareFunctionAsync) []): {req: ArgumentedIncomingMessageAbc, res: ServerResponse}
+	runRouteMiddlewares(req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc, middelwareList: (MiddlewareFunction | MiddlewareFunctionAsync) []): {req: ArgumentedIncomingMessageAbc, res: ServerResponse}
 
 	{
         	this.#runer(middelwareList, req, res)
@@ -54,9 +57,6 @@ class MiddlewareManager implements MiddlewareManagerI{
         	
 		return new MiddlewareManager();
 	}
-
 }
 
-
-		
 export const MiddlewarePipeline = MiddlewareManager.instance;
