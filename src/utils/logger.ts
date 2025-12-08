@@ -11,10 +11,10 @@ const statusColorMap: Map<number, chalk.ChalkFunction> = new Map([
 ]);
 
 
-export const createLog = (status: number, method: string, path: string): void => {
+export const createLog = (status: number, method: string, path: string, ms:number = 0): void => {
     showLoggin(
                 codeTo(status), 
-                `➤ ${dateFormater()}  { ${method} ${path} } ${status}`
+                `➤ [${dateFormater()}]  { ${method} ${path} } -> ${status} (${ms}ms)`
               )
 };
 

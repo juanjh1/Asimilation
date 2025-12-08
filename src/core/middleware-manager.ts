@@ -22,7 +22,7 @@ class MiddlewareManager implements MiddlewareManagerI{
 	}
 	
 	#runer(middelwareList: ( MiddlewareFunction | MiddlewareFunctionAsync ) [], req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc): void{
-		
+		console.log(this.#middelwares)	
 		const dispach = (index: number): void => {
 			
 			if( middelwareList.length == 0){ return }

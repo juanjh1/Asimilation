@@ -16,8 +16,6 @@ import  {
 from "../helpers/url-regex.js";
 
 
-
-
 export class RouteManager implements RouteManagerI{
 
   #paths: ControllerRegistry;
@@ -102,7 +100,7 @@ export class RouteManager implements RouteManagerI{
   }
 
    
-  #sendMessage(req: IncomingMessage, res: ServerResponse ,code: number, message: string):void{
+  #sendMessage(req: IncomingMessage, res: ServerResponse ,code: number, message: string): void{
 	
 	const accept: string = req.headers.accept ?? ""
 		
