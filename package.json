@@ -1,12 +1,17 @@
 {
-    "name": "asimilation",
-    "version": "1.0.0",
+    "name": "@asimilation/core",
+    "version": "0.0.1",
     "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "files": [
+        "dist"
+    ],
+    "types": "dist/types/index.d.ts",
     "description": "",
     "scripts": {
         "build": "tsc",
-        "start": "npm run build && node ./dist/run.js",
-        "test": "npm run build && node ./dist/asi-test/main.js"
+        "start": "npm run build && node ./dist/run.js"
     },
     "repository": {
         "type": "git",
@@ -22,5 +27,8 @@
     "dependencies": {
         "glob": "^11.0.3",
         "jest-haste-map": "^30.0.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
     }
 }

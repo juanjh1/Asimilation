@@ -77,6 +77,6 @@ export {
         ParamControllerRegistry,
         FunctionDescriptor,
         OptionsBasic, 
-	BasicController
-      }
+    	BasicController
+}
 

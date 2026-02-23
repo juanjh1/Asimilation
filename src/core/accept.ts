@@ -12,10 +12,9 @@ abstract class abstractAccept<I,O> implements StrategyIf<I,O>{
 		
 		return this.#reguex.test(accept)
 	}
-	
+
 	run(data:I):O{
 		throw Error("interface not implemented");
 	}
-
 }
 

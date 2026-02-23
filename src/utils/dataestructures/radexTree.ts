@@ -1,17 +1,18 @@
 export class RedexTreeNode <T> {
         
-    #flag: boolean;
-    #nodeMap: Map<T, RedexTreeNode<T>>;
-    #value:T | null;
+    #flag	: boolean;
+    #nodeMap	: Map<T, RedexTreeNode<T>>;
+    #value	: T | null;
 
     constructor(flag:boolean, value:T|null) {
-        this.#flag = flag;
-        this.#nodeMap = new Map();
-        this.#value = value;
+        this.#flag 	= flag;
+        this.#nodeMap 	= new Map();
+        this.#value 	= value;
     }
 
     
     public get flag() : boolean {
+
         return this.#flag;
     }
 
@@ -32,15 +33,18 @@ export class RedexTreeNode <T> {
 
 
     public addChild(node: RedexTreeNode<T>):void{
-        let value: T | null = node.value;
+        
+	let value: T | null = node.value;
 
         if(value == null){
-            throw new TypeError("Can't insert nullable values")
+            
+	    throw new TypeError("Can't insert nullable values")
         }
 
         if(this.#nodeMap.has(value)){
+
             throw new TypeError("Can't insert duplicated value")
-        }
+	}
 
         this.#nodeMap.set(value,node);
     }
@@ -67,7 +71,6 @@ export class RedexTreeNode <T> {
     public getNode(value: T) : RedexTreeNode<T> | null {
         return  this.#nodeMap.get(value) ?? null;
     }
-    
 
     public isLeaf (){
         return this.#nodeMap.size == 0;

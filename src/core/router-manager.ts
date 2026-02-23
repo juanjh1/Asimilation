@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse, METHODS } from 'http';
+import { IncomingMessage, ServerResponse, METHODS} from 'http';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
 import { MiddlewareFunction, PathKwargs, ControllerRegistry, RouteMap, ParamControllerRegistry, FunctionDescriptor } from './type.js';
 import { Controller } from './type.js';
@@ -14,7 +14,9 @@ import  {
 	  compiledUrlPattern
 } 
 from "../helpers/url-regex.js";
-
+import { validateCallbackExistence,  validateMethod} from "../helpers/url-validation.js"
+import { MethodNotFound } from '../exceptions/routing/method.error.js';
+import { RouteNotFoundError } from '../exceptions/routing/routing.error.js';
 
 export class RouteManager implements RouteManagerI{
 
@@ -35,12 +37,6 @@ export class RouteManager implements RouteManagerI{
     return this.#paths.has(url);
   }
 
-  #validateMethod(method: string): void {
-    if (!METHODS.includes(method)) {
-      throw new Error("The method is not suported");
-    }
-  }
-
   #basicRegisterMethods(incomngMethods: string[], methodsMap: RouteMap, functionDescriptor: FunctionDescriptor) {
     incomngMethods.forEach((metod: string) => {
       methodsMap.set(metod, functionDescriptor);
@@ -55,7 +51,7 @@ export class RouteManager implements RouteManagerI{
 
     const contextIncomngMethods = incomngMethods.map((method: string) => {
       method = method.toUpperCase()
-      this.#validateMethod(method)
+      validateMethod(method)
       return method
     })
     this.#basicRegisterMethods(contextIncomngMethods, methodsMap, functionDescriptor)
@@ -70,7 +66,6 @@ export class RouteManager implements RouteManagerI{
     }
   }
 
-
   #buildFunctionDescriptor(params: string[], controller: Controller, middlewares: MiddlewareFunction[]): FunctionDescriptor {
 	return { params, controller, middlewares }
   }
@@ -81,10 +76,10 @@ export class RouteManager implements RouteManagerI{
     url = normalizePath(url)
 
     const middlewares 	 : MiddlewareFunction[] = kwargs?.handlers ?? [];
-    const incomngMethods : string [] 		= kwargs?.methods ?? [];
-    const methodsMap	 : RouteMap 		= new Map();
-    const isDynamic  	 : boolean  		= hasTypeParams(url);
-    const params	 : string [] 		= isDynamic ? extractParamsNames(url) : [];
+    const incomngMethods : string [] 		    = kwargs?.methods ?? [];
+    const methodsMap	 : RouteMap 		    = new Map();
+    const isDynamic  	 : boolean  		    = hasTypeParams(url);
+    const params	     : string [] 		    = isDynamic ? extractParamsNames(url) : [];
     const descriptor	 : FunctionDescriptor 	= this.#buildFunctionDescriptor(params, callback, middlewares)
 
     this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
@@ -92,60 +87,22 @@ export class RouteManager implements RouteManagerI{
     if (!isDynamic) {
 
       this.#paths.set(url, methodsMap)
+     
       return
-    
     }
     
     this.#dynamicPath.set(compiledUrlPattern(url), methodsMap)
   }
 
-   
-  #sendMessage(req: IncomingMessage, res: ServerResponse ,code: number, message: string): void{
-	
-	const accept: string = req.headers.accept ?? ""
-		
-  }
-
-  // i need fix that because i has a big problem indetify the acceptance 
-  // dont delete req, reme,hits for the acceptance 
-  #handleNotFound(req: IncomingMessage, res: ServerResponse): void {
-    const code = 404
-    res.statusCode = code;
-    this.#sendMessage(req, res, code, "path not found")
-  }
-
   #assertHandler(path: RouteMap | undefined): RouteMap {
-
     	if (path === undefined) {
-		throw new Error("The path is not working properly")
+		    throw new Error("The path is not working properly")
     	}
     	return path
   }
 
-  #assertMethod(req: IncomingMessage, res: ServerResponse): void {
-    const code = 400;
-    res.statusCode = code;
-    this.#sendMessage(req, res, code, "Your reques comming whiout a method")
-  }
-
-  #assertCallback(req: IncomingMessage, res: ServerResponse, callback: undefined | Controller): Controller {
-    
-    const code: number = 500;
-    
-    if (callback === undefined) {
-     
-      this.#sendMessage(req,res, code,"Internal server error" ) 
-      res.statusCode = code;
-      
-      throw new Error("Callback can't be Undefined ")
-    
-    }
-
-    return callback
-  }
 
   #findMatchingDynamicPath(url: string): RegExp | undefined {
-    
     for (const key of this.#dynamicPath.keys()) {
       if (key.test(url)) return key;
     }
@@ -153,12 +110,12 @@ export class RouteManager implements RouteManagerI{
   }
 
   #buildParams(routeMap: RouteMap | undefined, method: string, url: string, regex: RegExp | undefined): { [key: string]: string } {
+    
     const paramsObject: { [key: string]: string } = {};
 
     if (!routeMap || !regex) { return paramsObject; }
-
-    const params: string[] = routeMap.get(method)?.params || [];
     
+    const params: string[] = routeMap.get(method)?.params || [];
     const values: string[] = regex.exec(url)?.slice(1, params.length + 1) || []
 
     if (values.length !== params.length) { throw new Error("") }
@@ -168,16 +125,14 @@ export class RouteManager implements RouteManagerI{
     return paramsObject;
   }
 
-  #validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined, req: IncomingMessage, res: ServerResponse): { httpMethodHandlers: RouteMap, method: string } | undefined {
+  #validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined): { httpMethodHandlers: RouteMap, method: string } {
     
     if (!method) {
-      this.#assertMethod(req, res);
-      return undefined;
+      throw new MethodNotFound()
     }
 
     if (!httpMethodHandlers || !httpMethodHandlers.has(method)) {
-      this.#handleNotFound(req, res);
-      return undefined;
+      throw new RouteNotFoundError()
     }
     return { httpMethodHandlers, method }
   }
@@ -196,23 +151,18 @@ export class RouteManager implements RouteManagerI{
 
     const url		: string   | undefined 	= req.url ?? "";
     const method	: string   | undefined 	= req.method;
-    const isStatic	: boolean 	     	= this.#pathInclude(url);
+    const isStatic	: boolean 	         	= this.#pathInclude(url);
     const isDynamic	: RegExp   | undefined 	= this.#findMatchingDynamicPath(url);
     const handler	: RouteMap | undefined  = this.#getHandler(url, isDynamic, isStatic)
     
-    let validation = this.#validateRoute(handler, method, req, res);
-
-    if (!validation) {
-      return
-    }
-
-    const { httpMethodHandlers, method: validatedMethod } = validation;
     
-    const callback: Controller = this.#assertCallback(req, res, httpMethodHandlers.get(validatedMethod)?.controller);
+    this.#validateRoute(handler, method);
     
-    const paramsForRequest: { [key: string]: string } = this.#buildParams(httpMethodHandlers, validatedMethod, url, isDynamic)
+    const callback: Controller = validateCallbackExistence(handler!.get(method!)?.controller);
     
-    const callbacks: MiddlewareFunction[] = httpMethodHandlers.get(validatedMethod)?.middlewares ?? [];
+    const paramsForRequest: { [key: string]: string } = this.#buildParams(handler!, method!, url, isDynamic)
+    
+    const callbacks: MiddlewareFunction[] = handler!.get(method!)?.middlewares ?? [];
 
     this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
 
@@ -221,6 +171,7 @@ export class RouteManager implements RouteManagerI{
 
     const newRequest  : ArgumentedIncomingMessageAbc = (req as ArgumentedIncomingMessageAbc);
     const newResponse : ArgumentedServerResponseAbc = (res as ArgumentedServerResponseAbc)
+    
     newRequest.params = paramsForRequest;
     
     if(res.writableEnded) return;
@@ -229,9 +180,7 @@ export class RouteManager implements RouteManagerI{
   }
 
   createRouteModule(initialPath: string): RouteModule {
-    
 	return new RouteModule(this, initialPath)
-  
   }
 
 }
@@ -246,7 +195,7 @@ export class RouteModule {
     this.#initialPath = normalizePath(nameSpace);
   }
 
-  addPath(path: string, callback: Controller, kwargs?: PathKwargs) {
+  addPath(path: string, callback: Controller ,kwargs?: PathKwargs) {
     const contextPath = this.#initialPath + normalizePath(path)
     this.#manager.addPath(contextPath, callback, kwargs)
   }

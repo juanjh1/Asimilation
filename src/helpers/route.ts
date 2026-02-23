@@ -1,7 +1,7 @@
 import {  FunctionDescriptor, RouteMap, routeToken } from "../core/type";
 import {RedexTreeNode} from "../utils/dataestructures/radexTree"
 
-class RouteNode  extends RedexTreeNode<string| RegExp>{
+class RouteNode extends RedexTreeNode<string| RegExp>{
 
     #routeMap?: RouteMap;
     #reguexMap: Map<RegExp, RedexTreeNode<string>>;
@@ -9,7 +9,8 @@ class RouteNode  extends RedexTreeNode<string| RegExp>{
     private constructor(flag:boolean, value:string|null, ) {
         
 	super(flag, value);
-        this.#reguexMap = new Map()
+        
+	this.#reguexMap = new Map()
         
 	if (flag){
         	this.#routeMap = new Map<string, FunctionDescriptor>();

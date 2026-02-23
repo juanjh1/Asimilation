@@ -17,7 +17,7 @@ class Configuration{
     // this dont work, i need a algoritm detect a dist and before this just scape
     #normalize_root(url: string) : string {
         
-	return join(url, "")
+	    return join(url, "")
     
     }
 }

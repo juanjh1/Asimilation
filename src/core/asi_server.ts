@@ -18,13 +18,6 @@ export class AsimilationServer extends http.Server {
         this.#callback(req, res);
     }
     
-    #close(message: string, stack: string | undefined): void {
-        super.close(() => {
-            console.log(chalk.magenta(message))
-            console.log(chalk.red(stack))
-        })
-    }
-    
     startListening(port: number): void {
         
 	super.listen(port, () => {

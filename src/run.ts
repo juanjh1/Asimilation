@@ -3,8 +3,6 @@ import "./urls.js";
 import "./core/asimilation.config.js";
 import { FileManager } from "./helpers/files.js";
 import { asiconf } from "./core/asimilation.config.js";
-import { entity } from "./asi-orm/main.js"
-import { Integer } from "./asi-orm/types.js"
 
 //const manager: FileManager =  await FileManager.create(asiconf.getRoot(), [asiconf.getRoot()])
 

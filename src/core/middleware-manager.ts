@@ -20,9 +20,11 @@ class MiddlewareManager implements MiddlewareManagerI{
 		this.#middelwares.push(middelware)
 
 	}
-	
+	// the next dont work, if u dont use next the function extecute	
 	#runer(middelwareList: ( MiddlewareFunction | MiddlewareFunctionAsync ) [], req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc): void{
+		
 		console.log(this.#middelwares)	
+		
 		const dispach = (index: number): void => {
 			
 			if( middelwareList.length == 0){ return }
@@ -30,13 +32,15 @@ class MiddlewareManager implements MiddlewareManagerI{
 			let current = middelwareList[index]
                 	
 			if ( current ) {
+				
 				current( req, res, ()=>{ 
 					dispach(index+1)
 				    }
 				)
 			}
 		}
-        	dispach(0);
+        	
+		dispach(0);
 	}
 
 	run(req: ArgumentedIncomingMessageAbc , res: ArgumentedServerResponseAbc) :  {req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc}{
