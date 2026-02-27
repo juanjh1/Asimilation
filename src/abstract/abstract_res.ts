@@ -1,8 +1,8 @@
-import { ArgumentedServerResponse } from "../interfaces/custom-server-response.js"
+import { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js"
 import { sendJsonMessage, sendTextMessage, redirect as redirectFn } from "../helpers/http-responses.js"
 import  {ServerResponse } from "http";
 
-export abstract class ArgumentedServerResponseAbc extends ServerResponse implements ArgumentedServerResponse{
+export abstract class ArgumentedServerResponseAbc extends ServerResponse implements ArgumentedServerResponseInterface{
 	
 	sendJson( json: Object, code: number ): void{
 		

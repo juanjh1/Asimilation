@@ -24,11 +24,15 @@ class Asimilation {
 
     run(): void {
 	    this.#liveServer.startListening(this.#port);
-        this.#liveServer.handlerRequest();
+      this.#liveServer.handlerRequest();
     }
 
     urlManager(): RouteManagerI {
         return this.#routerManager
+    }
+
+    setUrlPrefix(prefix: string){
+        // to do
     }
 }
 

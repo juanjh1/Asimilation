@@ -1,4 +1,5 @@
 import { ParamType } from '../enums/param-type.js';
+import { UrlIsNotDefined } from '../exceptions/domain/url-regex.js';
 
 export function hasTypeParams (url: string): boolean{
 	
@@ -11,13 +12,11 @@ function resolveTypeRegex (match: string, _: string): string {
 
     const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
 
-    for (const param of ParamType.values()) {
-
-	if (param.isTypeEqual(type)) { return param.getRegex(); }
-    
+    for (const param of ParamType.values()) {  // thats can be improved 
+	      if (param.isTypeEqual(type)) { return param.getRegex(); }
     }
 
-    throw new Error("Type is don't defined")
+    throw new UrlIsNotDefined()
 }
 
 export function extractParamsNames(url: string): string[] {
@@ -51,8 +50,8 @@ function compileRoutePattern(url: string): string{
 }
 
 export function compiledUrlPattern(url: string): RegExp {
-
-	const safe		: string = url.replace(/([.*+?^=!${}()|\[\]\/\\])/g, '\\$1');
+	
+  const safe		: string = url.replace(/([.*+?^=!${}()|\[\]\/\\])/g, '\\$1');
 	const compiledUrl	: string = compileRoutePattern(safe)
 	const regex		: RegExp = new RegExp(compiledUrl);
 	
