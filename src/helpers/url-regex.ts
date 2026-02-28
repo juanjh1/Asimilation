@@ -1,5 +1,5 @@
 import { ParamType } from '../enums/param-type.js';
-import { UrlIsNotDefined } from '../exceptions/domain/url-regex.js';
+import { TypeIsNotDefined } from '../exceptions/domain/url-regex.js';
 
 export function hasTypeParams (url: string): boolean{
 	
@@ -12,11 +12,11 @@ function resolveTypeRegex (match: string, _: string): string {
 
     const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
 
-    for (const param of ParamType.values()) {  // thats can be improved 
+    for (const param of ParamType.values()) {  // thats can be improved -> maby a dict
 	      if (param.isTypeEqual(type)) { return param.getRegex(); }
     }
 
-    throw new UrlIsNotDefined()
+    throw new TypeIsNotDefined(type)
 }
 
 export function extractParamsNames(url: string): string[] {
@@ -25,7 +25,7 @@ export function extractParamsNames(url: string): string[] {
 
     const matches: string[] | null = url.match(/<[a-zA-Z]+:[a-zA-Z]+>/g)
     
-    if (!matches) { throw new Error("No parameter matches found") }
+    if (!matches) { throw new Error("No parameter matches found") } // dont remember what happende here// need read
 
     const values = matches.map((value: string) => { return value.replace(/[<>]/g, "").split(":")[NAME_LOCATION] })
     
@@ -44,15 +44,16 @@ export function normalizePath(nameSpace: string): string {
 }
 
 
-function compileRoutePattern(url: string): string{
-
+function createRoutePattern(url: string): string {
+  // when match the regex send string matched to de resolveTypeRegex and after 
+  // send a no compile pattern
 	return "^" + url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, resolveTypeRegex ) + "$" 
 }
 
 export function compiledUrlPattern(url: string): RegExp {
 	
   const safe		: string = url.replace(/([.*+?^=!${}()|\[\]\/\\])/g, '\\$1');
-	const compiledUrl	: string = compileRoutePattern(safe)
+	const compiledUrl	: string = createRoutePattern(safe)
 	const regex		: RegExp = new RegExp(compiledUrl);
 	
 	return regex;

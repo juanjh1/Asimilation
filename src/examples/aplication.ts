@@ -7,4 +7,10 @@ url.addPath("/", (req, res) => {
 
  res.sendJson({"fala": "mano"}, 200)
 })
+
+url.addPath("/<>", (req, res) => {
+   console.log(req.params.id)
+   res.sendJson({"fala": "mano"}, 200)
+})
+
 asi.run()

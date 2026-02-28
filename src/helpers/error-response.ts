@@ -1,4 +1,4 @@
-import { ArgumentedIncomingMessage } from '../interfaces/custom-request';
+import { ArgumentedIncomingMessageInterface } from '../interfaces/custom-request';
 import { ArgumentedServerResponseInterface } from '../interfaces/custom-server-response';
 import { AceptedMapObject, AllowAceptType, ErrorResponseHandler} from '../types/router-response.type';
 
@@ -7,7 +7,7 @@ export  function createErrorResponseHandler (
 ):ErrorResponseHandler
 {
   return ( 
-    req: ArgumentedIncomingMessage, 
+    req: ArgumentedIncomingMessageInterface, 
     res: ArgumentedServerResponseInterface, 
     statusCode: number, 
     message: string

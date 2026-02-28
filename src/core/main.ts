@@ -14,7 +14,7 @@ class Asimilation {
     
     constructor(routerManager: RouteManagerI ) {
         this.#routerManager = routerManager;
-        this.#liveServer = new AsimilationServer(routerManager.controlerHadler.bind(routerManager));
+        this.#liveServer = new AsimilationServer(routerManager.controllerHandler.bind(routerManager));
     }
     
     setup(port: number, path: string) : void{

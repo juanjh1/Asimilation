@@ -1,5 +1,7 @@
 export class ParamType{ // this is a enum, i use that becouse the 
+    
 
+    
     static IntType:ParamType = new ParamType("int", "(\\d+)")
     static StringType: ParamType = new ParamType("string", "([a-zA-Z]+)")
     static sulgType: ParamType = new ParamType("slug", "([a-z0-9-]+)")
@@ -16,16 +18,18 @@ export class ParamType{ // this is a enum, i use that becouse the
         this.#piceOfRegex = piceOfRegex;   
     }
 
-    getRegex(): string{
+    getRegex(): string
+    {
         return  this.#piceOfRegex;
     }
 
-    getType(): string{
+    getType(): string 
+    {
         return this.#type;
     }
-    isTypeEqual(type: string){
+    
+    isTypeEqual(type: string)
+    {
         return this.#type === type;
     }
-
-
 }

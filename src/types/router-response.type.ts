@@ -1,5 +1,5 @@
-import { ArgumentedServerResponseInterface } from '../interfaces/custom-server-response';
-import { ArgumentedIncomingMessage } from '../interfaces/custom-request';
+import { ArgumentedServerResponseInterface } from '../interfaces/custom-server-response.js';
+import { ArgumentedIncomingMessageInterface } from '../interfaces/custom-request.js';
 
 
 export type AllowAceptType =  {
@@ -7,7 +7,7 @@ export type AllowAceptType =  {
 }
 
 export type  ErrorResponseHandler = ( 
-    req: ArgumentedIncomingMessage, 
+    req: ArgumentedIncomingMessageInterface, 
     res: ArgumentedServerResponseInterface, 
     statusCode: number, 
     message: string

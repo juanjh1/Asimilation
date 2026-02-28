@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse, METHODS} from 'http';
 import { MiddlewareManagerI } from '../interfaces/middleware-manager.js';
-import { MiddlewareFunction, PathKwargs, ControllerRegistry, RouteMap, ParamControllerRegistry, FunctionDescriptor } from './type.js';
+import { MiddlewareFunction, PathKwargs, ControllerRegistry, RouteMap, ParamControllerRegistry, FunctionDescriptor, MiddlewareFunctionAsync } from './type.js';
 import { Controller } from './type.js';
 import "../middlewares.js";
 import "../default/middleware/logger.js";
@@ -8,19 +8,18 @@ import { ArgumentedIncomingMessageAbc  } from "../abstract/abstract_req.js";
 import { RouteManagerI } from "../interfaces/route-manager.js";
 import { ArgumentedServerResponseAbc  } from "../abstract/abstract_res.js"
 import  { 
-	  hasTypeParams, 
-	  normalizePath, 
-	  extractParamsNames, 
-	  compiledUrlPattern
+	hasTypeParams, 
+	normalizePath, 
+	extractParamsNames, 
+	compiledUrlPattern
 } 
 from "../helpers/url-regex.js";
 import { validateCallbackExistence,  validateMethod} from "../helpers/url-validation.js"
-import { MethodNotFound } from '../exceptions/routing/method.error.js';
-import { RouteNotFoundError } from '../exceptions/routing/routing.error.js';
 import { ErrorResponseHandler } from '../types/router-response.type.js';
 import { createErrorResponseHandler } from '../helpers/error-response.js';
 import { sendErrorText, sendErrorJson } from '../utils/http-error-response.adapter.js'; 
 import { NOT_FOUND_404 } from '../constants/status_code.constants.js';
+import { buildFunctionDescriptor } from '../helpers/function-descriptor.helper.js';   
 
 export class RouteManager implements RouteManagerI{
 
@@ -75,28 +74,21 @@ export class RouteManager implements RouteManagerI{
     }
   }
 
-  #buildFunctionDescriptor(params: string[], controller: Controller, middlewares: MiddlewareFunction[]): FunctionDescriptor {
-	  return { params, controller, middlewares }
-  }
- 
-
   addPath(url: string, callback: Controller, kwargs?: PathKwargs): void {
     
     url = normalizePath(url)
 
-    const middlewares 	 : MiddlewareFunction[] = kwargs?.handlers ?? [];
+    const middlewares 	 : (MiddlewareFunction | MiddlewareFunctionAsync)[]  = kwargs?.handlers ?? [];
     const incomngMethods : string [] 		        = kwargs?.methods ?? [];
     const methodsMap	   : RouteMap 		        = new Map();
-    const isDynamic  	  : boolean  		          = hasTypeParams(url);
-    const params	      : string [] 		        = isDynamic ? extractParamsNames(url) : [];
-    const descriptor	  : FunctionDescriptor 	  = this.#buildFunctionDescriptor(params, callback, middlewares)
+    const isDynamic  	   : boolean  		        = hasTypeParams(url);
+    const params	       : string [] 		        = isDynamic ? extractParamsNames(url) : [];
+    const descriptor	   : FunctionDescriptor 	= buildFunctionDescriptor(params, callback, middlewares)
 
     this.#setMethodsSafety(incomngMethods, descriptor, methodsMap);
 
     if (!isDynamic) {
-
       this.#paths.set(url, methodsMap)
-     
       return
     }
     
@@ -105,11 +97,10 @@ export class RouteManager implements RouteManagerI{
 
   #assertHandler(path: RouteMap | undefined): RouteMap {
     	if (path === undefined) {
-		    throw new Error("The path is not working properly")
+		    throw new Error("The path is not working properly") // maby un 500? 
     	}
     	return path
   }
-
 
   #findMatchingDynamicPath(url: string): RegExp | undefined {
     for (const key of this.#dynamicPath.keys()) {
@@ -125,7 +116,6 @@ export class RouteManager implements RouteManagerI{
     regex: RegExp | undefined
   ): { [key: string]: string } 
   {
-    
     const paramsObject: { [key: string]: string } = {};
 
     if (!routeMap || !regex) { return paramsObject; }
@@ -149,12 +139,12 @@ export class RouteManager implements RouteManagerI{
   {
     
     if (!method) {
-        this.#httperrorHandler(req, res,NOT_FOUND_404, "Request whiout method")
+        this.#httperrorHandler(req, res, NOT_FOUND_404, "Request without method")
         return false;
     }
 
     if (!httpMethodHandlers || !httpMethodHandlers.has(method)) {
-       this.#httperrorHandler(req, res,NOT_FOUND_404, "Route dont exist");
+       this.#httperrorHandler(req, res, NOT_FOUND_404, "Route don't exist");
        return false;
     }
 
@@ -162,45 +152,57 @@ export class RouteManager implements RouteManagerI{
   }
 
   #getHandler(url: string, regexUrl: RegExp | undefined, isStatic: boolean):RouteMap | undefined{
-	return  isStatic
-      ? this.#assertHandler(this.#paths.get(url))
-      : regexUrl
-      ? this.#assertHandler(this.#dynamicPath.get(regexUrl))
-      : undefined;
+	  return  isStatic
+        ? this.#assertHandler(this.#paths.get(url))
+        : regexUrl
+        ? this.#assertHandler(this.#dynamicPath.get(regexUrl))
+        : undefined;
   }
 
-  controlerHadler(req: IncomingMessage, res: ServerResponse): void {
-    this.#middlewareManger.run(req, res);
-    
-    Object.setPrototypeOf(req, ArgumentedIncomingMessageAbc.prototype);
-    Object.setPrototypeOf(res, ArgumentedServerResponseAbc.prototype );
- 
+  controllerHandler(req: IncomingMessage, res: ServerResponse): void {
+     
     const newRequest  : ArgumentedIncomingMessageAbc = (req as ArgumentedIncomingMessageAbc);
     const newResponse : ArgumentedServerResponseAbc = (res as ArgumentedServerResponseAbc)
     
+    // set prototype for acces a wraper methods 
+    Object.setPrototypeOf(newRequest, ArgumentedIncomingMessageAbc.prototype)
+    Object.setPrototypeOf(newResponse, ArgumentedServerResponseAbc.prototype)
+
     const url		    : string   | undefined 	= req.url ?? "";
     const method	  : string   | undefined 	= req.method;
     const isStatic	: boolean 	          	= this.#pathInclude(url);
     const isDynamic	: RegExp   | undefined 	= this.#findMatchingDynamicPath(url);
     const handler 	: RouteMap | undefined  = this.#getHandler(url, isDynamic, isStatic)
-    
-    if (!this.#validateRoute(handler, method, newRequest, newResponse)) return;
-    
-    const callback          : Controller                = validateCallbackExistence(handler!.get(method!)?.controller);
-    const paramsForRequest  : {[key: string]: string }  = this.#buildParams(handler!, method!, url, isDynamic)
-    const callbacks         :  MiddlewareFunction[]     = handler!.get(method!)?.middlewares ?? [];
-    
-    this.#middlewareManger.runRouteMiddlewares(req, res, callbacks);
-
-    newRequest.params = paramsForRequest;
-    
-    if(res.writableEnded) return;
-    
-    callback(newRequest,  newResponse);
+      
+    // run global middelwares 
+    this.#middlewareManger.run(
+      newRequest, 
+      newResponse, 
+      (_, __, next) => {
+        if (!this.#validateRoute(handler, method, newRequest, newResponse)) return;
+      
+        const callback          : Controller                = validateCallbackExistence(handler!.get(method!)?.controller);
+        const paramsForRequest  : {[key: string]: string }  = this.#buildParams(handler!, method!, url, isDynamic)
+        const callbacks         :  (MiddlewareFunction | MiddlewareFunctionAsync) []  = handler!.get(method!)?.middlewares ?? [];
+        // run espesific middelwares 
+        this.#middlewareManger.runRouteMiddlewares(
+          req, 
+          res, 
+          callbacks,
+          (_, __, nextR )=>{
+            newRequest.params = paramsForRequest;
+            if(res.writableEnded) return;
+            callback(newRequest,  newResponse);
+            nextR()
+          }
+        );
+        next() 
+      }
+    );
   }
 
   createRouteModule(initialPath: string): RouteModule {
-	return new RouteModule(this, initialPath)
+	  return new RouteModule(this, initialPath)
   }
 
 }

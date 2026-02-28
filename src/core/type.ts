@@ -13,7 +13,10 @@ type BasicController =  (req: IncomingMessage, res: ServerResponse) => void;
 
 type Controller = (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc) => void;
 
-type PathKwargs = { methods?: string[], handlers?: MiddlewareFunction[] };
+type PathKwargs = { 
+  methods?: string[], 
+  handlers?: (MiddlewareFunction| MiddlewareFunctionAsync)[] 
+};
 
 type RouteMap = Map<string,  FunctionDescriptor>;
 
@@ -24,7 +27,7 @@ type ParamControllerRegistry = Map<RegExp , RouteMap>;
 type  FunctionDescriptor  = {
      params: string[],
      controller: Controller,
-     middlewares: MiddlewareFunction [];
+     middlewares: (MiddlewareFunction | MiddlewareFunctionAsync) [];
 }
 
 type OptionsBasic = {
