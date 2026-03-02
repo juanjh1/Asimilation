@@ -17,7 +17,7 @@ class Asimilation {
         this.#liveServer = new AsimilationServer(routerManager.controllerHandler.bind(routerManager));
     }
     
-    setup(port: number, path: string) : void{
+    setup(port: number, path: string): void{
 	    this.#port = port;
 	    this.#basePath = path;
     }
@@ -31,7 +31,11 @@ class Asimilation {
         return this.#routerManager
     }
 
-    setUrlPrefix(prefix: string){
+    use(): void {
+
+    }
+
+    setUrlPrefix(prefix: string): void{
         // to do
     }
 }

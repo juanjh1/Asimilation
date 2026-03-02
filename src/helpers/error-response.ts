@@ -29,7 +29,7 @@ export  function createErrorResponseHandler (
          return { "acceptType": acceptType, "q": q}
        })
        .sort((a, b)=> b.q - a.q)
-       .filter(e => e.q != 0)
+       .filter(e => (e.q != 0) || (e.q != undefined))
        .filter( e => Object.keys(allowAceptTypes).includes(e.acceptType)) ?? []
          
        if (aceptedMaped.length < 1){

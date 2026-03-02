@@ -11,9 +11,9 @@ MiddlewarePipeline.addMiddleware(
       next:(error?:Error)=> void
     )=>
     {
-      console.log('entre aqui')
       const start: Date = new Date();
       req.on("end", ()=>{
+            
             let statusCode : number | undefined = res.statusCode
             let method 	   : string | undefined = req.method
             let url        : string | undefined =  req.url

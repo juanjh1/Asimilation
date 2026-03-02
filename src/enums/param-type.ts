@@ -1,10 +1,8 @@
 export class ParamType{ // this is a enum, i use that becouse the 
     
-
-    
-    static IntType:ParamType = new ParamType("int", "(\\d+)")
-    static StringType: ParamType = new ParamType("string", "([a-zA-Z]+)")
-    static sulgType: ParamType = new ParamType("slug", "([a-z0-9-]+)")
+    static IntType:ParamType = new ParamType("int", "\\d+")
+    static StringType: ParamType = new ParamType("string", "[a-zA-Z]+")
+    static sulgType: ParamType = new ParamType("slug", "[a-z0-9-]+")
     static booleanType: ParamType = new ParamType("boolean", "(true|false)")
 
     static values(): ParamType[] {
@@ -18,9 +16,9 @@ export class ParamType{ // this is a enum, i use that becouse the
         this.#piceOfRegex = piceOfRegex;   
     }
 
-    getRegex(): string
+    getRegex(name: string): string
     {
-        return  this.#piceOfRegex;
+        return `(?<${name}>${this.#piceOfRegex})` ;
     }
 
     getType(): string 

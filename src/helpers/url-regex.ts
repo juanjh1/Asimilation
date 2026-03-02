@@ -9,11 +9,14 @@ export function hasTypeParams (url: string): boolean{
 function resolveTypeRegex (match: string, _: string): string {
     
     const TYPE_LOCATION: number = 0
-
-    const type = match.replace(/[<>]/g, "").split(":")[TYPE_LOCATION]
-
+    const NAME_LOCATION: number = 1
+    const atributes = match.replace(/[<>]/g, "").split(":")
+    const type      = atributes[TYPE_LOCATION]
+    const name      = atributes[NAME_LOCATION]
     for (const param of ParamType.values()) {  // thats can be improved -> maby a dict
-	      if (param.isTypeEqual(type)) { return param.getRegex(); }
+	      if (param.isTypeEqual(type)) {
+          return param.getRegex(name); 
+        }
     }
 
     throw new TypeIsNotDefined(type)
@@ -47,7 +50,7 @@ export function normalizePath(nameSpace: string): string {
 function createRoutePattern(url: string): string {
   // when match the regex send string matched to de resolveTypeRegex and after 
   // send a no compile pattern
-	return "^" + url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g, resolveTypeRegex ) + "$" 
+	return  `^${url.replace(/<[a-zA-Z]+:[a-zA-Z]+>/g,resolveTypeRegex)}$` 
 }
 
 export function compiledUrlPattern(url: string): RegExp {
