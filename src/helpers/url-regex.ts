@@ -2,7 +2,6 @@ import { ParamType } from '../enums/param-type.js';
 import { TypeIsNotDefined } from '../exceptions/domain/url-regex.js';
 
 export function hasTypeParams (url: string): boolean{
-	
 	return /<[a-zA-Z]+:[a-zA-Z]+>/g.test(url)
 }
 
@@ -45,7 +44,6 @@ export function normalizePath(nameSpace: string): string {
 
     return contextNameSpace;
 }
-
 
 function createRoutePattern(url: string): string {
   // when match the regex send string matched to de resolveTypeRegex and after 

@@ -36,7 +36,6 @@ function registerMethods(
     basicRegisterMethods(contextIncomngMethods, methodsMap, functionDescriptor)
 }
 
-
 export function setMethodsSafety(
   incomngMethods: string[], 
   functionDescriptor: FunctionDescriptor, 

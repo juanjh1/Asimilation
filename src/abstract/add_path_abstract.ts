@@ -29,7 +29,11 @@ export abstract class AddRoutePathAbc implements AddRoutePathInterface {
     this.dynamicPath = _dynamicPath
   }
 
-  addPath(url: string, callback: Controller, kwargs?: PathKwargs): void { 
+  route(
+    url: string, 
+    callback: Controller, 
+    kwargs?: PathKwargs
+  ): void { 
     
     url = normalizePath(url)
 

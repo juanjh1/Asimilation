@@ -5,7 +5,6 @@ import  {ServerResponse } from "http";
 export abstract class ArgumentedServerResponseAbc extends ServerResponse implements ArgumentedServerResponseInterface{
 	
 	sendJson( json: Object, code: number ): void{
-		
 		sendJsonMessage(this, json, code)
 	}	
 	

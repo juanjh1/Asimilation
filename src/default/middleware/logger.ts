@@ -1,4 +1,4 @@
-import { MiddlewarePipeline } from "../../core/middleware-manager.js";
+import { MiddlewarePipeline } from "../../managers/middleware.manager.js";
 import {ServerResponse} from "http"
 import { ArgumentedIncomingMessageInterface } from "../../interfaces/custom-request.js";
 import { createLog } from "../../utils/logger.js";

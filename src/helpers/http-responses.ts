@@ -1,13 +1,19 @@
 import  {ServerResponse} from "http";
+import { ResponseOption } from '../types/response.type';
 
 
 function sendResponse(
   res: ServerResponse, 
   data: any,  
-  options:{code:number, contentType: string}
+  options:ResponseOption
 ):void
 {
-    res.writeHead(options.code, options.contentType);
+    res.writeHead(
+      options.code, 
+      { 
+        "content-type" :options['Content-Type']
+      }
+    );
     res.end(data);
 }
 
@@ -18,7 +24,14 @@ export function sendJsonMessage(
 ): void
 {
     const messaje: string = JSON.stringify(json, null, 2);
-    sendResponse(res,messaje, {code, contentType: 'application/json'} )
+    sendResponse(
+      res, 
+      messaje, 
+      {  
+        code, 
+        "Content-Type": 'application/json'
+       } 
+    )
 }
 
 
@@ -28,7 +41,7 @@ export function sendTextMessage(
   code: number
 ): void 
 {
-    sendResponse(res,text, {code, contentType: 'text/plain'} )
+    sendResponse(res,text, {code, "Content-Type": 'text/plain'} )
 }
 
 

@@ -1,29 +1,31 @@
-import { RouteManager} from './router-manager.js';
-import { MiddlewarePipeline } from './middleware-manager.js';
+import { RouteManager} from '../managers/router.manager.js';
+import { MiddlewarePipeline } from '../managers/middleware.manager.js';
 import { RouteManagerI } from '../interfaces/route-manager.js';
-import {AsimilationServer} from "./asi_server.js"
+import {AsimilationServer} from "./asi.server.js"
+import { AsimilationConfiguration } from './asimilation.config.js';
+import { ConfigType } from '../types/config.type.js';
 
 class Asimilation {
     
     static server = new Asimilation(new RouteManager(MiddlewarePipeline));
     
     #routerManager	: RouteManagerI;
-    #liveServer		: AsimilationServer;
-    #port		    : number = 5000;
-    #basePath		: string = "";
-    
+    #liveServer		  : AsimilationServer;
+    #config         : AsimilationConfiguration;
+
     constructor(routerManager: RouteManagerI ) {
         this.#routerManager = routerManager;
-        this.#liveServer = new AsimilationServer(routerManager.controllerHandler.bind(routerManager));
+        this.#liveServer    = new AsimilationServer(routerManager.controllerHandler);
+        this.#config        = new AsimilationConfiguration(import.meta.url)
     }
     
-    setup(port: number, path: string): void{
-	    this.#port = port;
-	    this.#basePath = path;
+    setup(config: ConfigType): void{
+      const port: number | undefined = config.port
+      if ( port ) this.#config.setPort(port);
     }
 
     run(): void {
-	    this.#liveServer.startListening(this.#port);
+	    this.#liveServer.startListening(this.#config.getPort());
       this.#liveServer.handlerRequest();
     }
 
@@ -31,9 +33,7 @@ class Asimilation {
         return this.#routerManager
     }
 
-    use(): void {
-
-    }
+    use(): void {}
 
     setUrlPrefix(prefix: string): void{
         // to do

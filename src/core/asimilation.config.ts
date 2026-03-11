@@ -1,22 +1,21 @@
-import { fileURLToPath } from 'url';
-import { dirname , join} from "path";
-
-class Configuration{
+export class AsimilationConfiguration{
+    #port		        : number;
+    #aplicationPath : string; 
     
-    static configuration = new Configuration()
+    constructor(
+      aplicationPath: string
+    )
+    {
+      this.#port  = 5000;
+      this.#aplicationPath = aplicationPath;
 
-    constructor(){
-    
     }
 
-    // this dont work, i need a algoritm detect a dist and before this just scape
-    #normalize_root(url: string) : string {
-        
-	    return join(url, "")
-    
+    getPort(): number {
+      return this.#port
+    }
+
+    setPort(port: number ): void{
+      this.#port = port;
     }
 }
-
-const asiconf: Configuration = Configuration.configuration
-
-export {asiconf};

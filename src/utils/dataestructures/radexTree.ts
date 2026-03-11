@@ -1,5 +1,4 @@
 export class RedexTreeNode <T> {
-        
     #flag	: boolean;
     #nodeMap	: Map<T, RedexTreeNode<T>>;
     #value	: T | null;
@@ -10,7 +9,6 @@ export class RedexTreeNode <T> {
         this.#value 	= value;
     }
 
-    
     public get flag() : boolean {
 
         return this.#flag;
@@ -34,17 +32,11 @@ export class RedexTreeNode <T> {
 
     public addChild(node: RedexTreeNode<T>):void{
         
-	let value: T | null = node.value;
+        let value: T | null = node.value;
 
-        if(value == null){
-            
-	    throw new TypeError("Can't insert nullable values")
-        }
+        if(value == null) throw new TypeError("Can't insert nullable values");
 
-        if(this.#nodeMap.has(value)){
-
-            throw new TypeError("Can't insert duplicated value")
-	}
+        if(this.#nodeMap.has(value))throw new TypeError("Can't insert duplicated value");
 
         this.#nodeMap.set(value,node);
     }
@@ -56,9 +48,7 @@ export class RedexTreeNode <T> {
 
     public deleteChild(value: T): RedexTreeNode<T>|null {
 
-        if (!this.#nodeMap.has(value)) {
-            throw new Error(`No child with value ${value} found`);
-        }
+        if (!this.#nodeMap.has(value)) throw new Error(`No child with value ${value} found`);
 
         let deletedNode: RedexTreeNode<T>| null = this.#nodeMap.get(value) ??  null;
 

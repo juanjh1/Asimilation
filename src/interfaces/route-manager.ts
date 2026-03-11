@@ -1,9 +1,7 @@
 import { Controller, PathKwargs} from "../core/type.js"
-import {RouteModule} from "../core/router-manager.js"
 import { IncomingMessage, ServerResponse} from 'http';
+import { AddRoutePathInterface } from './add_path.interface.js';
 
-export interface RouteManagerI {
-	addPath(url: string, callback: Controller ,kwargs?: PathKwargs): void; 
-	createRouteModule(initialPath: string): RouteModule;
+export interface RouteManagerI extends AddRoutePathInterface {
 	controllerHandler(req: IncomingMessage, res: ServerResponse): void;	
 }

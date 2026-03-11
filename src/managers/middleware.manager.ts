@@ -1,6 +1,8 @@
-import {IncomingMessage, ServerResponse} from "http"
 import { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
-import { MiddlewareFunction, MiddlewareFunctionAsync } from "./type.js";
+import { 
+  MiddlewareFunction,
+  MiddlewareFunctionAsync 
+} from "../core/type.js";
 import { ArgumentedIncomingMessageInterface } from '../interfaces/custom-request.js'; 
 import { ArgumentedServerResponseInterface } from '../interfaces/custom-server-response.js';
 
@@ -13,13 +15,12 @@ class MiddlewareManager implements MiddlewareManagerI{
 		
 	constructor(){
 		this.#middelwares  = []
-	}
+  }
 
 	addMiddleware(middelware: MiddlewareFunction| MiddlewareFunctionAsync): void{
 		this.#middelwares.push(middelware)
 	}
 
-	// the next dont work, if u dont use next the function extecute	
 	async #runer(
     middelwareList: ( MiddlewareFunction | MiddlewareFunctionAsync ) [], 
     req: ArgumentedIncomingMessageInterface, 
@@ -67,8 +68,11 @@ class MiddlewareManager implements MiddlewareManagerI{
 	}
 
 	static getInstance(): MiddlewareManager{
-		return new MiddlewareManager();
+		if (!MiddlewareManager.instance) {
+        MiddlewareManager.instance = new MiddlewareManager();
+    }
+    return MiddlewareManager.instance;
 	}
 }
 
-export const MiddlewarePipeline = MiddlewareManager.instance;
+export const MiddlewarePipeline = MiddlewareManager.getInstance();
