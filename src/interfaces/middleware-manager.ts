@@ -1,20 +1,20 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { MiddlewareFunction, MiddlewareFunctionAsync } from '../core/type';
+import { MiddlewareFunction} from '../core/type';
 import { ArgumentedServerResponseInterface} from './custom-server-response.js' 
 import { ArgumentedIncomingMessageInterface } from './custom-request';
-
+import { HttpPair } from '../types/mensaje-exchange.type';
 
 export interface MiddlewareManagerI {
     run(
         req: ArgumentedIncomingMessageInterface,
         res: ArgumentedServerResponseInterface,
-        callbackMidd  : (MiddlewareFunctionAsync | MiddlewareFunction)
-    ): Promise< {req: ArgumentedIncomingMessageInterface, res: ArgumentedServerResponseInterface}>;
+        callbackMidd  :MiddlewareFunction
+    ):Promise<HttpPair>;
     
     runRouteMiddlewares (
-      req: IncomingMessage, 
-      res: ServerResponse, 
-      middelwareList: (MiddlewareFunction | MiddlewareFunctionAsync)[],
-      callbackMidd  : (MiddlewareFunctionAsync | MiddlewareFunction)
-    ): {req: ArgumentedIncomingMessageInterface, res: ArgumentedServerResponseInterface};
+      req: ArgumentedIncomingMessageInterface, 
+      res: ArgumentedServerResponseInterface, 
+      middelwareList: MiddlewareFunction [],
+      callbackMidd  :MiddlewareFunction    
+    ): Promise<HttpPair>;
 }

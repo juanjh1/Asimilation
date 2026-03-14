@@ -1,39 +1,37 @@
 import { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
 import { 
   MiddlewareFunction,
-  MiddlewareFunctionAsync 
 } from "../core/type.js";
 import { ArgumentedIncomingMessageInterface } from '../interfaces/custom-request.js'; 
 import { ArgumentedServerResponseInterface } from '../interfaces/custom-server-response.js';
+import { HttpPair } from '../types/mensaje-exchange.type.js';
 
 
-class MiddlewareManager implements MiddlewareManagerI{
+export default class MiddlewareManager implements MiddlewareManagerI{
 	
-	static instance: MiddlewareManager = MiddlewareManager.getInstance();
-    
-	#middelwares: (MiddlewareFunction | MiddlewareFunctionAsync) [] ;
+	#middelwares: MiddlewareFunction [] ;
 		
 	constructor(){
 		this.#middelwares  = []
   }
 
-	addMiddleware(middelware: MiddlewareFunction| MiddlewareFunctionAsync): void{
+	set (middelware: MiddlewareFunction): void{
 		this.#middelwares.push(middelware)
 	}
 
 	async #runer(
-    middelwareList: ( MiddlewareFunction | MiddlewareFunctionAsync ) [], 
+    middelwareList: ( MiddlewareFunction ) [], 
     req: ArgumentedIncomingMessageInterface, 
     res: ArgumentedServerResponseInterface
   ): Promise<void>
   {
 		
-		function  dispach (index: number): Promise<void>  {
+		async function  dispach (index: number): Promise<void>  {
 			if( middelwareList.length == 0 ) return Promise.resolve();
 			let current = middelwareList[index]
 			if ( current ) {
 				return Promise.resolve(
-          current( req, res, 
+          await current( req, res, 
           ()=>{ dispach(index+1)} 
           )
         );
@@ -47,8 +45,8 @@ class MiddlewareManager implements MiddlewareManagerI{
 	async run(
     req           : ArgumentedIncomingMessageInterface, 
     res           : ArgumentedServerResponseInterface,
-    callbackMidd  : (MiddlewareFunctionAsync | MiddlewareFunction)
-  ) :  Promise<{req: ArgumentedIncomingMessageInterface, res: ArgumentedServerResponseInterface}>
+    callbackMidd  : MiddlewareFunction
+  ):Promise<HttpPair>
   {
 		const newMiddList = this.#middelwares.concat(callbackMidd)
     await this.#runer(newMiddList, req, res)
@@ -56,23 +54,15 @@ class MiddlewareManager implements MiddlewareManagerI{
 		return {req, res}
 	}
 
-	runRouteMiddlewares(
+	async runRouteMiddlewares(
     req: ArgumentedIncomingMessageInterface, 
     res: ArgumentedServerResponseInterface, 
-    middelwareList: (MiddlewareFunction | MiddlewareFunctionAsync) [],
-    callbackMidd  : (MiddlewareFunctionAsync | MiddlewareFunction)
-  ): {req: ArgumentedIncomingMessageInterface, res: ArgumentedServerResponseInterface}
+    middelwareList: MiddlewareFunction  [],
+    callbackMidd  : MiddlewareFunction
+  ):Promise<HttpPair>
 	{
-      this.#runer(middelwareList.concat(callbackMidd), req, res)
+      await this.#runer(middelwareList.concat(callbackMidd), req, res)
       return {req, res}
-	}
-
-	static getInstance(): MiddlewareManager{
-		if (!MiddlewareManager.instance) {
-        MiddlewareManager.instance = new MiddlewareManager();
-    }
-    return MiddlewareManager.instance;
 	}
 }
 
-export const MiddlewarePipeline = MiddlewareManager.getInstance();

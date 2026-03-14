@@ -1,27 +1,42 @@
-import { RouteManager} from '../managers/router.manager.js';
-import { MiddlewarePipeline } from '../managers/middleware.manager.js';
-import { RouteManagerI } from '../interfaces/route-manager.js';
-import {AsimilationServer} from "./asi.server.js"
+import { RouteManager}        from '../managers/router.manager.js';
+import { RouteManagerI }      from '../interfaces/route-manager.js';
 import { AsimilationConfiguration } from './asimilation.config.js';
-import { ConfigType } from '../types/config.type.js';
+import { ConfigType }         from '../types/config.type.js';
+import  Middelware from  '../managers/middleware.manager.js' 
+import { InitializationError } from '../exceptions/basics/initialization.error.js';   
+import { AsimilationServerI } from '../interfaces/asimilation.server.interface.js';
+import { AsimilationServer } from './asi.server.js';
+import { AsimilationConfigurationI } from '../interfaces/asimilation.config.interface.js';
+import { Controller } from './type.js';
+import { PathKwargs } from './type.js'; 
+import { GetRouteI } from '../interfaces/router.interface.js';
 
-class Asimilation {
-    
-    static server = new Asimilation(new RouteManager(MiddlewarePipeline));
-    
-    #routerManager	: RouteManagerI;
-    #liveServer		  : AsimilationServer;
-    #config         : AsimilationConfiguration;
+const token = Symbol("AsInitToken")
 
-    constructor(routerManager: RouteManagerI ) {
-        this.#routerManager = routerManager;
-        this.#liveServer    = new AsimilationServer(routerManager.controllerHandler);
-        this.#config        = new AsimilationConfiguration(import.meta.url)
+export default class Asimilation {
+    
+    #rm	: RouteManagerI;
+    #liveServer		  : AsimilationServerI;
+    #config         : AsimilationConfigurationI;
+    #baseUrl        : string;
+    
+    constructor(
+      routerManager : RouteManagerI, 
+      liveServer    : AsimilationServerI,
+      tkn           : Symbol,
+      config        : AsimilationConfigurationI 
+    ) {
+        if (token !== tkn) throw new InitializationError(this.constructor.name);  
+        this.#rm = routerManager;
+        this.#liveServer    = liveServer;
+        this.#config        = config;
+        this.#baseUrl        = '';
     }
     
     setup(config: ConfigType): void{
       const port: number | undefined = config.port
-      if ( port ) this.#config.setPort(port);
+      this.#config.setPort(port)
+      
     }
 
     run(): void {
@@ -29,18 +44,33 @@ class Asimilation {
       this.#liveServer.handlerRequest();
     }
 
-    urlManager(): RouteManagerI {
-        return this.#routerManager
-    }
+    use(
+      context: GetRoute 
+    ): void {
+      if( context instanceof GetRoute){
+        for(const  route  of context.getRoute() ){
 
-    use(): void {}
+        }
+      }
+    }
 
     setUrlPrefix(prefix: string): void{
-        // to do
+      this.#baseUrl = prefix
     }
+
+    route(
+      url       : string, 
+      callback  : Controller, 
+      kwargs?   : PathKwargs
+    ){
+        this.#rm.route(this.#baseUrl + url, callback, kwargs)    
+    }
+
+    static init(): Asimilation{
+      const md = new Middelware() 
+      const rm = new RouteManager(md)
+      const as = new AsimilationServer(rm.controllerHandler)
+      const ac = new AsimilationConfiguration(import.meta.url)
+      return new Asimilation(rm, as, token, ac)
+    } 
 }
-
-const asi: Asimilation = Asimilation.server;
-const url: RouteManagerI = asi.urlManager();
-
-export { asi, url };

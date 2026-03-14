@@ -5,7 +5,6 @@ import {
 import { 
   MiddlewareFunction, 
   RouteMap, 
-  MiddlewareFunctionAsync 
 } from '../core/type.js';
 import { 
   Controller 
@@ -27,6 +26,8 @@ import { ArgumentedIncomingMessageInterface } from '../interfaces/custom-request
 import { ArgumentedServerResponseInterface } from '../interfaces/custom-server-response.js';
 import { ArgumentedIncomingMessageImp } from '../classes/req_and_res.implement.js';
 import { ArgumentResponse } from '../helpers/message-exchange-proxie.helper.js';
+import { normalizePath } from '../helpers/url-regex.js';
+
 
 export class RouteManager extends AddRoutePathAbc  implements RouteManagerI {
 
@@ -93,6 +94,17 @@ export class RouteManager extends AddRoutePathAbc  implements RouteManagerI {
     return true; 
   }
 
+  setHandlerString(url: string, controller: RouteMap): void{
+    this.paths.set(normalizePath(url), controller) 
+  }
+  
+  setHandlerRegex(prefix:string ,  url:RegExp, controller: RouteMap):void{
+    const p = url.toString()
+    const np = normalizePath(prefix + p);
+    const rnp = new RegExp(np)
+    this.dynamicPath.set(rnp, controller)
+  }
+
   #getHandler(url: string, regexUrl: RegExp | undefined, isStatic: boolean):RouteMap | undefined{
 	  return  isStatic
         ? this.#assertHandler(this.paths.get(url))
@@ -128,7 +140,7 @@ export class RouteManager extends AddRoutePathAbc  implements RouteManagerI {
       
         const callback          : Controller  = validateCallbackExistence(handler!.get(method!)?.controller);
         const paramsForRequest  : StringObject = this.#buildParams(url, isDynamic);
-        const callbacks         : (MiddlewareFunction | MiddlewareFunctionAsync) []  = handler!.get(method!)?.middlewares ?? [];
+        const callbacks         : MiddlewareFunction []  = handler!.get(method!)?.middlewares ?? [];
         // run espesific middelwares 
         this.#middlewareManger.runRouteMiddlewares(
           req, 

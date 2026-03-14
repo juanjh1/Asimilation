@@ -2,9 +2,10 @@ import {BasicController} from "./type.js"
 import http, { IncomingMessage, ServerResponse } from 'http';
 import chalk from "chalk"
 import { dateFormater } from '../utils/date-utils.js';
+import { AsimilationServerI } from '../interfaces/asimilation.server.interface.js';
 
 
-export class AsimilationServer extends http.Server {
+export class AsimilationServer extends http.Server implements AsimilationServerI{
 
     #callback: BasicController;
     

@@ -1,11 +1,9 @@
-import { asi, url} from './core/main.js';
-import { MiddlewarePipeline } from './managers/middleware.manager.js';
+import  * as asi from './core/main.js';
 import type * as Types from "./core/type.js";
-
+import { Router } from './classes/route.class.js';
 export {
   asi,
-  url, 
-  MiddlewarePipeline, 
-  Types
+  Types,
+  Router
 }
 

@@ -1,11 +1,9 @@
-import { MiddlewarePipeline } from "../../managers/middleware.manager.js";
 import {ServerResponse} from "http"
 import { ArgumentedIncomingMessageInterface } from "../../interfaces/custom-request.js";
 import { createLog } from "../../utils/logger.js";
 import { timeTakedToResolve } from "../../helpers/date.js"
 
-MiddlewarePipeline.addMiddleware(
-    (
+export const basicLogger = (
       req: ArgumentedIncomingMessageInterface, 
       res:ServerResponse , 
       next:(error?:Error)=> void
@@ -30,4 +28,3 @@ MiddlewarePipeline.addMiddleware(
       })
       next()
     }
-)

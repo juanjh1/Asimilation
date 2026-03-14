@@ -1,4 +1,7 @@
-import {IncomingMessage, ServerResponse} from "http"
+import {
+  IncomingMessage, 
+  ServerResponse
+} from "http"
 import  { 
   IHasteFS,
   IModuleMap, 
@@ -8,9 +11,11 @@ import { TokenType } from "../enums/lexer.js";
 import { ArgumentedIncomingMessageAbc} from "../abstract/abstract_req.js"
 import { ArgumentedServerResponseAbc } from "../abstract/abstract_res.js";
 
-type MiddlewareFunction =  (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc, next: (error?:Error)=> void) => void;
-
-type MiddlewareFunctionAsync = (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc , next: (error?:Error)=> void) => Promise<void>;
+type MiddlewareFunction =  (
+  req: ArgumentedIncomingMessageAbc, 
+  res: ArgumentedServerResponseAbc, 
+  next: (error?:Error)=> void
+) => void | Promise<void>;
 
 type BasicController =  (req: IncomingMessage, res: ServerResponse) => void;
 
@@ -18,7 +23,7 @@ type Controller = (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerRespo
 
 type PathKwargs = { 
   methods?: string[], 
-  handlers?: (MiddlewareFunction| MiddlewareFunctionAsync)[] 
+  handlers?: (MiddlewareFunction)[] 
 };
 
 type RouteMap = Map<string,  FunctionDescriptor>;
@@ -30,7 +35,7 @@ type ParamControllerRegistry = Map<RegExp , RouteMap>;
 type  FunctionDescriptor  = {
      params: string[],
      controller: Controller,
-     middlewares: (MiddlewareFunction | MiddlewareFunctionAsync) [];
+     middlewares: MiddlewareFunction [];
 }
 
 type OptionsBasic = {
@@ -77,7 +82,6 @@ type TestResult = {
 
 export {
         MiddlewareFunction, 
-        MiddlewareFunctionAsync,
         Controller, 
         PathKwargs, 
         ControllerRegistry,  

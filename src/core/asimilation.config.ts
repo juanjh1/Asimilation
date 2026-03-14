@@ -1,4 +1,6 @@
-export class AsimilationConfiguration{
+import { AsimilationConfigurationI } from '../interfaces/asimilation.config.interface';
+
+export class AsimilationConfiguration implements AsimilationConfigurationI{
     #port		        : number;
     #aplicationPath : string; 
     
@@ -15,7 +17,8 @@ export class AsimilationConfiguration{
       return this.#port
     }
 
-    setPort(port: number ): void{
+    setPort(port: number | undefined ): void {
+      if(!port){ return ;}
       this.#port = port;
     }
 }

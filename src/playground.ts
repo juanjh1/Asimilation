@@ -1,14 +1,25 @@
-import { asi, url} from "./core/main.js"
-import { createErrorResponseHandler } from './helpers/error-response.js'
+import Asimilation from './core/main.js'
 import { FileManager } from './helpers/files.js'
-import {assingType} from './utils/decorators/url-type-builder.decorator.js'
-import { MiddlewarePipeline } from './managers/middleware.manager.js' 
 import { bound } from './utils/decorators/bound.decorator.js'
+import { Router } from './classes/route.class.js'
 
-asi.setup({
-  port:3100,
-  debug: true
-})
+const asi = Asimilation.init()
+
+const route = new Router() 
+
+route.route(
+"/", (req, res) => {  
+  console.log(res.sendJson)
+  res.sendJson({"-->": "<--"}, 200)
+}
+)
+
+asi.use(route)
+
+//asi.setup({
+//  port:3100,
+//  debug: true
+//})
 
 
 //url.route("/", (req, res) => {  
@@ -18,9 +29,9 @@ asi.setup({
 //)
 
 
-url.route("/<int:id>", (req, res) => {
-  res.sendJson({"-->": "<--"}, 200)
-})
+//url.route("/<int:id>/<int:id2>", (req, res) => {
+//  res.sendjson({"-->": "<--"}, 200)
+//})
 
 class Hello {
   constructor(){

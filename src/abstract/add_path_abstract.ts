@@ -8,7 +8,6 @@ import {
 import { 
   Controller, 
   MiddlewareFunction, 
-  MiddlewareFunctionAsync, 
   RouteMap, 
   FunctionDescriptor,
   PathKwargs,
@@ -37,7 +36,7 @@ export abstract class AddRoutePathAbc implements AddRoutePathInterface {
     
     url = normalizePath(url)
 
-    const middlewares 	 : (MiddlewareFunction | MiddlewareFunctionAsync)[]  = kwargs?.handlers ?? [];
+    const middlewares 	 : MiddlewareFunction []  = kwargs?.handlers ?? [];
     const incomngMethods : string [] 		        = kwargs?.methods ?? [];
     const methodsMap	   : RouteMap 		        = new Map();
     const isDynamic  	   : boolean  		        = hasTypeParams(url);
