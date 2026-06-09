@@ -2,25 +2,21 @@ import { ArgumentedIncomingMessageAbc } from "../../abstract/abstract_req.js";
 import { ArgumentedServerResponseAbc } from "../../abstract/abstract_res.js";
 
 export const basicTimeoutMiddelware = async (
-    req: ArgumentedIncomingMessageAbc, 
-    res:ArgumentedServerResponseAbc, 
-    next:(error?:Error)=> void
-  ): Promise<void>=>  
-  {
-    let finished: boolean = false;
-    const timer = setTimeout(
-      ():void => {
-        if(!finished || !res.writableEnded){	
-          res.sendJson({message: 'Request timed out'}, 504)
-          finished = true;
-        }
-      }, 1
-    )
-    try{
-      next();
-    }
-    finally{
-      clearTimeout(timer);
-      finished = true;
-    }
-  }
+	req: ArgumentedIncomingMessageAbc,
+	res: ArgumentedServerResponseAbc,
+	next: (error?: Error) => void,
+): Promise<void> => {
+	let finished: boolean = false;
+	const timer = setTimeout((): void => {
+		if (!finished || !res.writableEnded) {
+			res.sendJson({ message: "Request timed out" }, 504);
+			finished = true;
+		}
+	}, 1);
+	try {
+		next();
+	} finally {
+		clearTimeout(timer);
+		finished = true;
+	}
+};

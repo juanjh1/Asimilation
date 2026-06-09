@@ -1,5 +1,5 @@
-import  {IncomingMessage} from "http"
+import { IncomingMessage } from "http";
 
 export interface ArgumentedIncomingMessageInterface extends IncomingMessage {
-    params: Record<string, any>;
+	params: Record<string, any>;
 }

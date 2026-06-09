@@ -1,95 +1,87 @@
-import {
-  IncomingMessage, 
-  ServerResponse
-} from "http"
-import  { 
-  IHasteFS,
-  IModuleMap, 
-}  from 'jest-haste-map';
+import { IncomingMessage, ServerResponse } from "http";
+import { IHasteFS, IModuleMap } from "jest-haste-map";
 import { Stats } from "fs";
 import { TokenType } from "../enums/lexer.js";
-import { ArgumentedIncomingMessageAbc} from "../abstract/abstract_req.js"
+import { ArgumentedIncomingMessageAbc } from "../abstract/abstract_req.js";
 import { ArgumentedServerResponseAbc } from "../abstract/abstract_res.js";
 
-type MiddlewareFunction =  (
-  req: ArgumentedIncomingMessageAbc, 
-  res: ArgumentedServerResponseAbc, 
-  next: (error?:Error)=> void
+type MiddlewareFunction = (
+	req: ArgumentedIncomingMessageAbc,
+	res: ArgumentedServerResponseAbc,
+	next: (error?: Error) => void,
 ) => void | Promise<void>;
 
-type BasicController =  (req: IncomingMessage, res: ServerResponse) => void;
+type BasicController = (req: IncomingMessage, res: ServerResponse) => void;
 
-type Controller = (req: ArgumentedIncomingMessageAbc, res: ArgumentedServerResponseAbc) => void;
+type Controller = (
+	req: ArgumentedIncomingMessageAbc,
+	res: ArgumentedServerResponseAbc,
+) => void;
 
-type PathKwargs = { 
-  methods?: string[], 
-  handlers?: (MiddlewareFunction)[] 
+type PathKwargs = {
+	methods?: string[];
+	handlers?: MiddlewareFunction[];
 };
 
-type RouteMap = Map<string,  FunctionDescriptor>;
+type RouteMap = Map<string, FunctionDescriptor>;
 
-type ControllerRegistry = Map<string , RouteMap>;
+type ControllerRegistry = Map<string, RouteMap>;
 
-type ParamControllerRegistry = Map<RegExp , RouteMap>;
+type ParamControllerRegistry = Map<RegExp, RouteMap>;
 
-type  FunctionDescriptor  = {
-     params: string[],
-     controller: Controller,
-     middlewares: MiddlewareFunction [];
-}
+type FunctionDescriptor = {
+	params: string[];
+	controller: Controller;
+	middlewares: MiddlewareFunction[];
+};
 
 type OptionsBasic = {
-    id:string,
-    extensions: string[],
-    maxWorkers: number,
-    name: string,
-    platforms: string[],
-    rootDir: string,
-    roots: string[],
-    retainAllFiles: boolean,
-}
-
-
-type EventsQueue = Array<{
-	  filePath: string;
-	  stat: Stats | undefined;
-	  type: string;
-}>;
-
-
-export type ChangeEvent = {
-  	eventsQueue: EventsQueue;
-  	hasteFS: IHasteFS;
-  	moduleMap: IModuleMap;
+	id: string;
+	extensions: string[];
+	maxWorkers: number;
+	name: string;
+	platforms: string[];
+	rootDir: string;
+	roots: string[];
+	retainAllFiles: boolean;
 };
 
+type EventsQueue = Array<{
+	filePath: string;
+	stat: Stats | undefined;
+	type: string;
+}>;
+
+export type ChangeEvent = {
+	eventsQueue: EventsQueue;
+	hasteFS: IHasteFS;
+	moduleMap: IModuleMap;
+};
 
 export type routeToken = {
-  	type:string,
-  	token: string|RegExp
-}
+	type: string;
+	token: string | RegExp;
+};
 
 export type Token = {
-   type:TokenType,
-   value: string,
-}
+	type: TokenType;
+	value: string;
+};
 
-
-type TestResult = { 
-  success : boolean, 
-  errorMessage: string | null 
-}
+type TestResult = {
+	success: boolean;
+	errorMessage: string | null;
+};
 
 export {
-        MiddlewareFunction, 
-        Controller, 
-        PathKwargs, 
-        ControllerRegistry,  
-        RouteMap, 
-        TestResult, 
-        ParamControllerRegistry,
-        FunctionDescriptor,
-        OptionsBasic, 
-        BasicController
-}
-
+	MiddlewareFunction,
+	Controller,
+	PathKwargs,
+	ControllerRegistry,
+	RouteMap,
+	TestResult,
+	ParamControllerRegistry,
+	FunctionDescriptor,
+	OptionsBasic,
+	BasicController,
+};

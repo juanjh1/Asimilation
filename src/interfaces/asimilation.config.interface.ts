@@ -1,4 +1,4 @@
 export interface AsimilationConfigurationI {
-    getPort(): number; 
-    setPort(port: number | undefined ): void;
+	getPort(): number;
+	setPort(port: number | undefined): void;
 }

@@ -1,17 +1,18 @@
-import { METHODS } from 'http';
-import { Controller } from "../core/type.js"
-import { NotSuportedMethodError } from '../exceptions/routing/method.error.js';
+import { METHODS } from "http";
+import { Controller } from "../core/type.js";
+import { NotSuportedMethodError } from "../exceptions/routing/method.error.js";
 
-
-export function validateCallbackExistence (callback: undefined | Controller): Controller {
-    if (callback === undefined) {
-      throw new Error("Callback can't be Undefined ")
-    }
-    return callback
+export function validateCallbackExistence(
+	callback: undefined | Controller,
+): Controller {
+	if (callback === undefined) {
+		throw new Error("Callback can't be Undefined ");
+	}
+	return callback;
 }
 
 //export function validateRoute(httpMethodHandlers: RouteMap | undefined, method: string | undefined, req: IncomingMessage, res: ServerResponse): { httpMethodHandlers: RouteMap, method: string } | undefined {
-    
+
 //    if (!method) {
 //      this.#assertMethod(req, res);
 //      return undefined;
@@ -25,8 +26,7 @@ export function validateCallbackExistence (callback: undefined | Controller): Co
 //}
 
 export function validateMethod(method: string): void {
-    if (!METHODS.includes(method)) {
-	    throw new NotSuportedMethodError;
-    }
+	if (!METHODS.includes(method)) {
+		throw new NotSuportedMethodError();
+	}
 }
-

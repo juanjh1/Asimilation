@@ -1,69 +1,81 @@
-export class RedexTreeNode <T> {
-    #flag	: boolean;
-    #nodeMap	: Map<T, RedexTreeNode<T>>;
-    #value	: T | null;
+import { deepEqual } from "../compare.util";
 
-    constructor(flag:boolean, value:T|null) {
-        this.#flag 	= flag;
-        this.#nodeMap 	= new Map();
-        this.#value 	= value;
-    }
+export class TrieNode<T> {
+	#flag: boolean;
+	#nodeMap: Map<string, TrieNode<T>>;
+	#value: T | null;
 
-    public get flag() : boolean {
+	constructor(flag: boolean, value: T | null) {
+		this.#flag = flag;
+		this.#nodeMap = new Map();
+		this.#value = value;
+	}
 
-        return this.#flag;
-    }
+	public get flag(): boolean {
+		return this.#flag;
+	}
 
-    
-    public set value(v : T) {
-        this.#value = v;
-    }
-    
-    
-    public get value() : T|null {
-        return this.#value
-    }
+	public set value(v: T) {
+		this.#value = v;
+	}
 
-    
-    public set flag(flag : boolean) {
-        this.#flag= flag;
-    }
+	public get value(): T | null {
+		return this.#value;
+	}
 
+	public set flag(flag: boolean) {
+		this.#flag = flag;
+	}
 
-    public addChild(node: RedexTreeNode<T>):void{
-        
-        let value: T | null = node.value;
+	public addChild(flag: boolean, value: T): void {
+		if (this.#nodeMap.get(String(value))) {
+			return;
+		}
+		this.#nodeMap.set(String(value), new TrieNode<T>(flag, value));
+	}
 
-        if(value == null) throw new TypeError("Can't insert nullable values");
+	public hasChild(value: T): boolean {
+		return this.#nodeMap.has(String(value));
+	}
 
-        if(this.#nodeMap.has(value))throw new TypeError("Can't insert duplicated value");
+	public deleteChild(value: T): TrieNode<T> | null {
+		if (!this.#nodeMap.has(String(value)))
+			throw new Error(`No child with value ${value} found`);
 
-        this.#nodeMap.set(value,node);
-    }
-    
+		let deletedNode: TrieNode<T> | null =
+			this.#nodeMap.get(String(value)) ?? null;
 
-    public hasChild(value:T): boolean{
-        return this.#nodeMap.has(value);
-    }
+		this.#nodeMap.delete(String(value));
 
-    public deleteChild(value: T): RedexTreeNode<T>|null {
+		return deletedNode;
+	}
 
-        if (!this.#nodeMap.has(value)) throw new Error(`No child with value ${value} found`);
+	public getNode(value: T): TrieNode<T> | null {
+		return this.#nodeMap.get(String(value)) ?? null;
+	}
 
-        let deletedNode: RedexTreeNode<T>| null = this.#nodeMap.get(value) ??  null;
+	public findNode(value: T): boolean {
+		let isEqual: boolean = deepEqual(this.#value, value);
 
-        this.#nodeMap.delete(value);
+		if (isEqual) return isEqual;
 
-        return deletedNode;
-     
-    }
-    
-    public getNode(value: T) : RedexTreeNode<T> | null {
-        return  this.#nodeMap.get(value) ?? null;
-    }
+		for (const rxn of Object.values(this.#nodeMap)) {
+			if (rxn.findNode(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    public isLeaf (){
-        return this.#nodeMap.size == 0;
-    }
+	public isLeaf() {
+		return this.#nodeMap.size == 0;
+	}
 
+	public preorder<Callback>(callback: Callback): void {
+		callback(this.#value);
+		if (this.#nodeMap.size == 0) return;
+		Object.values(this.#nodeMap).map((rxn: TrieNode<T>) =>
+			rxn.preorder(callback),
+		);
+	}
 }

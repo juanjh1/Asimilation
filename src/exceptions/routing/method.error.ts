@@ -1,15 +1,12 @@
 class MethodNotFound extends Error {
-    constructor(){
-        super("Handler whiout a method")
-    }
+	constructor() {
+		super("Handler whiout a method");
+	}
 }
 
-class NotSuportedMethodError extends Error{
-    constructor(){
-        super("The method is not suported")
-    }
+class NotSuportedMethodError extends Error {
+	constructor() {
+		super("The method is not suported");
+	}
 }
-export {
-    MethodNotFound,
-    NotSuportedMethodError
-}
+export { MethodNotFound, NotSuportedMethodError };

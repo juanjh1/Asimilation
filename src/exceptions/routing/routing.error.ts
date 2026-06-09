@@ -1,9 +1,7 @@
-class RouteNotFoundError extends Error{
-    constructor(){
-        super("handler not found")
-    }
+class RouteNotFoundError extends Error {
+	constructor() {
+		super("handler not found");
+	}
 }
 
-export {
-    RouteNotFoundError,
-}
+export { RouteNotFoundError };
