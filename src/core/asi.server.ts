@@ -1,13 +1,10 @@
-import { BasicController } from "./type.js";
-import http, { IncomingMessage, ServerResponse } from "http";
+import type { BasicController } from "./type.js";
+import http, { type IncomingMessage, type ServerResponse } from "http";
 import chalk from "chalk";
 import { dateFormater } from "../utils/date-utils.js";
-import { AsimilationServerI } from "../interfaces/asimilation.server.interface.js";
+import type { AsimilationServerI } from "../interfaces/asimilation.server.interface.js";
 
-export class AsimilationServer
-	extends http.Server
-	implements AsimilationServerI
-{
+export class AsimilationServer extends http.Server implements AsimilationServerI {
 	#callback: BasicController;
 
 	constructor(callback: BasicController) {
@@ -21,7 +18,6 @@ export class AsimilationServer
 
 	startListening(port: number): void {
 		super.listen(port, () => {
-			console.log(`Watching for file changes with StatReloader\n`);
 			console.log(`${dateFormater()}\n`);
 			console.log(
 				chalk.yellow(`Server runing on `) +

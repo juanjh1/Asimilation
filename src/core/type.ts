@@ -1,9 +1,9 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { IHasteFS, IModuleMap } from "jest-haste-map";
-import { Stats } from "fs";
-import { TokenType } from "../enums/lexer.js";
-import { ArgumentedIncomingMessageAbc } from "../abstract/abstract_req.js";
-import { ArgumentedServerResponseAbc } from "../abstract/abstract_res.js";
+import type { IncomingMessage, ServerResponse } from "http";
+import type { IHasteFS, IModuleMap } from "jest-haste-map";
+import type { Stats } from "fs";
+import type { TokenType } from "../enums/lexer.js";
+import type { ArgumentedIncomingMessageAbc } from "../abstract/abstract_req.js";
+import type { ArgumentedServerResponseAbc } from "../abstract/abstract_res.js";
 
 type MiddlewareFunction = (
 	req: ArgumentedIncomingMessageAbc,
@@ -73,7 +73,7 @@ type TestResult = {
 	errorMessage: string | null;
 };
 
-export {
+export type {
 	MiddlewareFunction,
 	Controller,
 	PathKwargs,

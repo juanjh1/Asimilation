@@ -1,8 +1,8 @@
-import { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
-import { MiddlewareFunction } from "../core/type.js";
-import { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
-import { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js";
-import { HttpPair } from "../types/mensaje-exchange.type.js";
+import type { MiddlewareManagerI } from "../interfaces/middleware-manager.js";
+import type { MiddlewareFunction } from "../core/type.js";
+import type { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
+import type { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js";
+import type { HttpPair } from "../types/mensaje-exchange.type.js";
 
 export default class MiddlewareManager implements MiddlewareManagerI {
 	#middelwares: MiddlewareFunction[];
@@ -22,7 +22,7 @@ export default class MiddlewareManager implements MiddlewareManagerI {
 	): Promise<void> {
 		async function dispach(index: number): Promise<void> {
 			if (middelwareList.length == 0) return Promise.resolve();
-			let current = middelwareList[index];
+			const current = middelwareList[index];
 			if (current) {
 				return Promise.resolve(
 					await current(req, res, () => {

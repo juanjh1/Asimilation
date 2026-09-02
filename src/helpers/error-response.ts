@@ -1,6 +1,6 @@
-import { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request";
-import { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response";
-import {
+import type { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request";
+import type { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response";
+import type {
 	AceptedMapObject,
 	AllowAceptType,
 	ErrorResponseHandler,
@@ -28,17 +28,14 @@ export function createErrorResponseHandler(
 				.map((e) => {
 					const eSplited: string[] = e.split(";");
 					const acceptType: string = eSplited[0];
-					const qParam: string | undefined = eSplited.find((part) =>
-						part.includes("q="),
-					);
+					const qParam: string | undefined = eSplited.find((part) => part.includes("q="));
 					const q: number = qParam ? parseFloat(qParam.split("=")[1]) : 1.0;
 
 					return { acceptType: acceptType, q: q };
 				})
 				.sort((a, b) => b.q - a.q)
 				.filter((e) => e.q != 0 || e.q != undefined)
-				.filter((e) => Object.keys(allowAceptTypes).includes(e.acceptType)) ??
-			[];
+				.filter((e) => Object.keys(allowAceptTypes).includes(e.acceptType)) ?? [];
 
 		if (aceptedMaped.length < 1) {
 			res.sendJson({ error: message }, statusCode);

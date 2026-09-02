@@ -1,5 +1,5 @@
 import { validateMethod } from "./url-validation.js";
-import { RouteMap, FunctionDescriptor } from "../core/type.js";
+import type { RouteMap, FunctionDescriptor } from "../core/type.js";
 import { METHODS } from "http";
 
 function basicRegisterMethods(

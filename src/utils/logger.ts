@@ -23,8 +23,7 @@ export const createLog = (
 
 function codeTo(code: number): chalk.ChalkFunction {
 	const normalizedCode: number = Math.floor(code / 100) * 100;
-
-	let clarkFunction = statusColorMap.get(normalizedCode);
+	const clarkFunction = statusColorMap.get(normalizedCode);
 
 	return clarkFunction ?? chalk.gray;
 }

@@ -3,10 +3,7 @@
 // referece -> https://2ality.com/archive.html
 export function assingType<This, Args extends any[], Return>(
 	fn: Function,
-	_ctx: ClassMethodDecoratorContext<
-		This,
-		(this: This, ...args: Args) => Return
-	>,
+	_ctx: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
 ) {
 	return function wrapper(this: This, ...args: Args): Return {
 		console.log(`class method mame `);

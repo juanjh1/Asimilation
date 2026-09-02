@@ -1,8 +1,4 @@
-import {
-	MiddlewareFunction,
-	FunctionDescriptor,
-	Controller,
-} from "../core/type";
+import type { MiddlewareFunction, FunctionDescriptor, Controller } from "../core/type";
 
 export function buildFunctionDescriptor(
 	params: string[],

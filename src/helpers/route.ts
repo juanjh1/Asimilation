@@ -1,4 +1,4 @@
-import { FunctionDescriptor, RouteMap, routeToken } from "../core/type";
+import { type FunctionDescriptor, type RouteMap, routeToken } from "../core/type";
 import { RedexTreeNode } from "../utils/dataestructures/radexTree";
 
 class RouteNode extends RedexTreeNode<string | RegExp> {
@@ -20,17 +20,14 @@ class RouteNode extends RedexTreeNode<string | RegExp> {
 			return null;
 		}
 
-		let controller: FunctionDescriptor | null =
-			this.#routeMap?.get(method) ?? null;
+		const controller: FunctionDescriptor | null = this.#routeMap?.get(method) ?? null;
 
 		return controller;
 	}
 
 	public addMethods(controller: FunctionDescriptor, methods: string[]): void {
 		if (this.#routeMap == undefined) {
-			throw TypeError(
-				"You can't set controllers, this route is not a flaged node",
-			);
+			throw TypeError("You can't set controllers, this route is not a flaged node");
 		}
 
 		methods.forEach((methods) => {
@@ -52,7 +49,7 @@ class RouteNode extends RedexTreeNode<string | RegExp> {
 	private matchString(tokens: string[]): RouteMap | null {
 		this.validateTokensLength(tokens);
 
-		let currentToken: string = tokens[0];
+		const currentToken: string = tokens[0];
 
 		if (
 			(typeof this.value == "string" && this.value != currentToken) ||
@@ -65,8 +62,8 @@ class RouteNode extends RedexTreeNode<string | RegExp> {
 			return this.isLeaf() ? (this.#routeMap ?? null) : null;
 		}
 
-		let subTokens: string[] = tokens.slice(1);
-		let child: RouteNode | null = this.getNode(subTokens[0]) as RouteNode;
+		const subTokens: string[] = tokens.slice(1);
+		const child: RouteNode | null = this.getNode(subTokens[0]) as RouteNode;
 
 		if (child != null) {
 			return child.matchString(subTokens);

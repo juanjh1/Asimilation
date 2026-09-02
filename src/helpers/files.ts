@@ -1,16 +1,16 @@
 import HasteMap, {
-	IHasteFS,
-	IHasteMap,
-	IModuleMap,
+	type IHasteFS,
+	type IHasteMap,
+	type IModuleMap,
 	ModuleMap,
 } from "jest-haste-map";
 import { cpus } from "os";
 import fs, { watch } from "fs";
-import { ChangeEvent } from "../core/type.js";
+import type { ChangeEvent } from "../core/type.js";
 import { dirname, join, relative } from "path";
 import { FileDoesExist } from "../exceptions/basics/file.error.js";
 
-let fileResolve: Promise<any> = Promise.resolve();
+const fileResolve: Promise<any> = Promise.resolve();
 export class FileManager {
 	#hasteMapOption: any;
 	#map!: IHasteMap;
@@ -73,10 +73,7 @@ export class FileManager {
 		return file;
 	}
 
-	async template(
-		url: string,
-		context: { [key: string]: any },
-	): Promise<string> {
+	async template(url: string, context: { [key: string]: any }): Promise<string> {
 		const file: string = await this.#getFile(url);
 		return file;
 		//const fileNormalized: string = file.replace(/({{\s*[A-Za-z.]+\s*}})/g, (match: string, _: string): string => {

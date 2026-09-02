@@ -1,4 +1,5 @@
-import http, { IncomingMessage, ServerResponse } from "http";
+import type http from "http";
+import { IncomingMessage, ServerResponse } from "http";
 import { BasicController } from "../core/type";
 
 export interface AsimilationServerI extends http.Server {

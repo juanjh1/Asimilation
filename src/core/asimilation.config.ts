@@ -1,4 +1,4 @@
-import { AsimilationConfigurationI } from "../interfaces/asimilation.config.interface";
+import type { AsimilationConfigurationI } from "../interfaces/asimilation.config.interface";
 
 export class AsimilationConfiguration implements AsimilationConfigurationI {
 	#port: number;
@@ -12,7 +12,7 @@ export class AsimilationConfiguration implements AsimilationConfigurationI {
 	getPort(): number {
 		return this.#port;
 	}
-
+	//set a port
 	setPort(port: number | undefined): void {
 		if (!port) {
 			return;

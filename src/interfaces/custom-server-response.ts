@@ -1,4 +1,4 @@
-import { ServerResponse } from "http";
+import type { ServerResponse } from "http";
 
 export interface ArgumentedServerResponseInterface extends ServerResponse {
 	sendJson(json: Object, code: number): void;

@@ -5,7 +5,12 @@ export class ParamType {
 	static BooleanType: ParamType = new ParamType("boolean", "(true|false)");
 
 	static values(): ParamType[] {
-		return [this.IntType, this.StringType, this.SulgType, this.BooleanType];
+		return [
+			ParamType.IntType,
+			ParamType.StringType,
+			ParamType.SulgType,
+			ParamType.BooleanType,
+		];
 	}
 
 	static getParam(key: string): ParamType | null {

@@ -1,15 +1,15 @@
 import { RouteManager } from "../managers/router.manager.js";
-import { RouteManagerI } from "../interfaces/route-manager.js";
+import type { RouteManagerI } from "../interfaces/route-manager.js";
 import { AsimilationConfiguration } from "./asimilation.config.js";
-import { ConfigType } from "../types/config.type.js";
+import type { ConfigType } from "../types/config.type.js";
 import Middelware from "../managers/middleware.manager.js";
 import { InitializationError } from "../exceptions/basics/initialization.error.js";
-import { AsimilationServerI } from "../interfaces/asimilation.server.interface.js";
+import type { AsimilationServerI } from "../interfaces/asimilation.server.interface.js";
 import { AsimilationServer } from "./asi.server.js";
-import { AsimilationConfigurationI } from "../interfaces/asimilation.config.interface.js";
-import { Controller } from "./type.js";
-import { PathKwargs } from "./type.js";
-import { GetRouteI } from "../interfaces/router.interface.js";
+import type { AsimilationConfigurationI } from "../interfaces/asimilation.config.interface.js";
+import type { Controller } from "./type.js";
+import type { PathKwargs } from "./type.js";
+import type { GetRouteI } from "../interfaces/router.interface.js";
 import { Router } from "../classes/route.class.js";
 
 const token = Symbol("AsInitToken");
@@ -23,7 +23,7 @@ export default class Asimilation {
 	constructor(
 		routerManager: RouteManagerI,
 		liveServer: AsimilationServerI,
-		tkn: Symbol,
+		tkn: symbol,
 		config: AsimilationConfigurationI,
 	) {
 		if (token !== tkn) throw new InitializationError(this.constructor.name);

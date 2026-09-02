@@ -1,10 +1,5 @@
-import { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
-import {
-	sendJsonMessage,
-	sendTextMessage,
-	redirect as redirectFn,
-} from "../helpers/http-responses.js";
-import { ServerResponse, IncomingMessage } from "http";
+import type { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
+import { ServerResponse, IncomingMessage } from "node:http";
 
 export abstract class ArgumentedIncomingMessageAbc
 	extends IncomingMessage

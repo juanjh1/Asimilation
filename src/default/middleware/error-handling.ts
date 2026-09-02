@@ -1,5 +1,5 @@
-import { ArgumentedIncomingMessageAbc } from "../../abstract/abstract_req.js";
-import { ArgumentedServerResponseAbc } from "../../abstract/abstract_res.js";
+import type { ArgumentedIncomingMessageAbc } from "../../abstract/abstract_req.js";
+import type { ArgumentedServerResponseAbc } from "../../abstract/abstract_res.js";
 
 export const basicErrorMiddelware = (
 	req: ArgumentedIncomingMessageAbc,

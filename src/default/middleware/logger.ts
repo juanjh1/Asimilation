@@ -1,5 +1,5 @@
-import { ServerResponse } from "http";
-import { ArgumentedIncomingMessageInterface } from "../../interfaces/custom-request.js";
+import type { ServerResponse } from "node:http";
+import type { ArgumentedIncomingMessageInterface } from "../../interfaces/custom-request.js";
 import { createLog } from "../../utils/logger.js";
 import { timeTakedToResolve } from "../../helpers/date.js";
 
@@ -10,9 +10,9 @@ export const basicLogger = (
 ) => {
 	const start: Date = new Date();
 	req.on("end", () => {
-		let statusCode: number | undefined = res.statusCode;
-		let method: string | undefined = req.method;
-		let url: string | undefined = req.url;
+		const statusCode: number | undefined = res.statusCode;
+		const method: string | undefined = req.method;
+		const url: string | undefined = req.url;
 		const finalDate: Date = new Date();
 
 		const timeTaked: number = timeTakedToResolve(start, finalDate);

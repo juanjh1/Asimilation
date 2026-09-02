@@ -1,10 +1,8 @@
 import { METHODS } from "http";
-import { Controller } from "../core/type.js";
+import type { Controller } from "../core/type.js";
 import { NotSuportedMethodError } from "../exceptions/routing/method.error.js";
 
-export function validateCallbackExistence(
-	callback: undefined | Controller,
-): Controller {
+export function validateCallbackExistence(callback: undefined | Controller): Controller {
 	if (callback === undefined) {
 		throw new Error("Callback can't be Undefined ");
 	}

@@ -1,10 +1,10 @@
-import { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js";
+import type { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js";
 import {
 	sendJsonMessage,
 	sendTextMessage,
 	redirect as redirectFn,
 } from "../helpers/http-responses.js";
-import { ServerResponse } from "http";
+import { ServerResponse } from "node:http";
 
 export abstract class ArgumentedServerResponseAbc
 	extends ServerResponse

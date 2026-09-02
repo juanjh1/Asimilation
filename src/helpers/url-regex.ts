@@ -55,7 +55,7 @@ function createRoutePattern(url: string): string {
 export function compiledUrlPattern(url: string): RegExp {
 	const safe: string = url
 		.replace(/\/+/g, "/")
-		.replace(/([.*+?^=!${}()|\[\]\/\\])/g, "\\$1");
+		.replace(/([.*+?^=!${}()|[\]/\\])/g, "\\$1");
 	const compiledUrl: string = createRoutePattern(safe);
 	const regex: RegExp = new RegExp(compiledUrl);
 	return regex;

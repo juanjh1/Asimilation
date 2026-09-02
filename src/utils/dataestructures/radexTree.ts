@@ -42,8 +42,7 @@ export class TrieNode<T> {
 		if (!this.#nodeMap.has(String(value)))
 			throw new Error(`No child with value ${value} found`);
 
-		let deletedNode: TrieNode<T> | null =
-			this.#nodeMap.get(String(value)) ?? null;
+		const deletedNode: TrieNode<T> | null = this.#nodeMap.get(String(value)) ?? null;
 
 		this.#nodeMap.delete(String(value));
 
@@ -55,7 +54,7 @@ export class TrieNode<T> {
 	}
 
 	public findNode(value: T): boolean {
-		let isEqual: boolean = deepEqual(this.#value, value);
+		const isEqual: boolean = deepEqual(this.#value, value);
 
 		if (isEqual) return isEqual;
 
@@ -71,11 +70,9 @@ export class TrieNode<T> {
 		return this.#nodeMap.size == 0;
 	}
 
-	public preorder<Callback>(callback: Callback): void {
+	public preorder<cb extends (value: T | null) => void>(callback: cb): void {
 		callback(this.#value);
 		if (this.#nodeMap.size == 0) return;
-		Object.values(this.#nodeMap).map((rxn: TrieNode<T>) =>
-			rxn.preorder(callback),
-		);
+		Object.values(this.#nodeMap).map((rxn: TrieNode<T>) => rxn.preorder(callback));
 	}
 }

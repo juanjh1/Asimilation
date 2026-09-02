@@ -1,5 +1,5 @@
-import { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js";
-import { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
+import type { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response.js";
+import type { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
 
 export type AllowAceptType = {
 	[key: string]: (

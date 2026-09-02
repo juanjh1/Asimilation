@@ -1,11 +1,11 @@
-import { AddRoutePathInterface } from "../interfaces/add_path.interface.js";
+import type { AddRoutePathInterface } from "../interfaces/add_path.interface.js";
 import {
 	normalizePath,
 	hasTypeParams,
 	extractParamsNames,
 	compiledUrlPattern,
 } from "../helpers/url-regex.js";
-import {
+import type {
 	Controller,
 	MiddlewareFunction,
 	RouteMap,
@@ -21,10 +21,7 @@ export abstract class AddRoutePathAbc implements AddRoutePathInterface {
 	protected paths: ControllerRegistry;
 	protected dynamicPath: ParamControllerRegistry;
 
-	constructor(
-		_paths: ControllerRegistry,
-		_dynamicPath: ParamControllerRegistry,
-	) {
+	constructor(_paths: ControllerRegistry, _dynamicPath: ParamControllerRegistry) {
 		this.paths = _paths;
 		this.dynamicPath = _dynamicPath;
 	}

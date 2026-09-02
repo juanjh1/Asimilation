@@ -1,5 +1,5 @@
-import { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response";
-import { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request";
+import type { ArgumentedServerResponseInterface } from "../interfaces/custom-server-response";
+import type { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request";
 
 export type HttpPair = {
 	req: ArgumentedIncomingMessageInterface;

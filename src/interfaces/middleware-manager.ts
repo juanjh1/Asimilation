@@ -1,8 +1,8 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { MiddlewareFunction } from "../core/type";
-import { ArgumentedServerResponseInterface } from "./custom-server-response.js";
-import { ArgumentedIncomingMessageInterface } from "./custom-request";
-import { HttpPair } from "../types/mensaje-exchange.type";
+import type { MiddlewareFunction } from "../core/type";
+import type { ArgumentedServerResponseInterface } from "./custom-server-response.js";
+import type { ArgumentedIncomingMessageInterface } from "./custom-request";
+import type { HttpPair } from "../types/mensaje-exchange.type";
 
 export interface MiddlewareManagerI {
 	run(
