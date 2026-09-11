@@ -1,5 +1,5 @@
-import type { RouteMap } from "../core/type.js";
+import { RawRouteParams } from '../types/router.type.js';
 
 export interface GetRouteI {
-	getRoute(): Generator<{ Key: string | RegExp; value: RouteMap }>;
+	getRoute(): Generator<RawRouteParams| RawRouteParams>;
 }

@@ -46,10 +46,7 @@ export default class Asimilation {
 	use(context: GetRouteI): void {
 		if (context instanceof Router) {
 			for (const route of context.getRoute()) {
-				if (typeof route.Key === "string") {
-					console.log("working");
-					this.#rm.setHandlerString(this.#baseUrl + route.Key, route.value);
-				}
+        this.#rm.setHandler(route.url, route.callback, route.kwargs) 
 			}
 		}
 	}

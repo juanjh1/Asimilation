@@ -1,25 +1,23 @@
-import { AddRoutePathAbc } from "../abstract/add_path_abstract.js";
-import type { Controller, PathKwargs, RouteMap } from "../core/type.js";
+import type { Controller, PathKwargs} from "../core/type.js";
 import type { GetRouteI } from "../interfaces/router.interface.js";
+import { RawRouteParams } from '../types/router.type.js';
 
-export class Router extends AddRoutePathAbc implements GetRouteI {
-	#prefix: string;
+export class Router  implements GetRouteI {
+ 	protected paths: RawRouteParams []; 	
+  #prefix: string;
 
 	constructor(prefix?: string) {
-		super(new Map(), new Map());
 		this.#prefix = prefix ?? "";
+    this.paths = [];
 	}
 
-	*getRoute(): Generator<{ Key: string | RegExp; value: RouteMap }> {
-		for (const [Key, value] of this.paths) {
-			yield { Key, value };
-		}
-		for (const [Key, value] of this.dynamicPath) {
-			yield { Key, value };
-		}
-	}
+	*getRoute(): Generator<RawRouteParams> {
+	  for (const path of this.paths){
+        yield path
+    }
+  }
 
 	route(url: string, callback: Controller, kwargs?: PathKwargs): void {
-		super.route(this.#prefix + url, callback, kwargs);
+		this.paths.push({url: this.#prefix + url, callback, kwargs})
 	}
 }

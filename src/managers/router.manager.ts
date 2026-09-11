@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import type { MiddlewareFunction, RouteMap } from "../core/type.js";
+import type { MiddlewareFunction, PathKwargs, RouteMap } from "../core/type.js";
 import type { Controller } from "../core/type.js";
 import { sendErrorText, sendErrorJson } from "../utils/http-error-response.adapter.js";
 import type { RouteManagerI } from "../interfaces/route-manager.js";
@@ -75,16 +75,11 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 		return true;
 	}
 
-	setHandlerString(url: string, controller: RouteMap): void {
-		this.paths.set(normalizePath(url), controller);
+	setHandler(url: string, controller: Controller, kwargs?: PathKwargs ): void {
+		this.route(url, controller, kwargs )
+    console.log("pase", this.paths, this.dynamicPath )
 	}
 
-	setHandlerRegex(prefix: string, url: RegExp, controller: RouteMap): void {
-		const p = url.toString();
-		const np = normalizePath(prefix + p);
-		const rnp = new RegExp(np);
-		this.dynamicPath.set(rnp, controller);
-	}
 
 	#getHandler(
 		url: string,
