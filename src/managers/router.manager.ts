@@ -119,7 +119,7 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 			const paramsForRequest: StringObject = this.#buildParams(url, isDynamic);
 			const callbacks: MiddlewareFunction[] = handler!.get(method!)?.middlewares ?? [];
 			// run espesific middelwares
-			this.#middlewareManger.runRouteMiddlewares(req, res, callbacks, (_, __, nextR) => {
+			this.#middlewareManger.runRouteMiddlewares(newRequest, newResponse, callbacks, (_, __, nextR) => {
 				newRequest.params = paramsForRequest;
 
 				if (res.writableEnded) return;

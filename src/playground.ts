@@ -16,21 +16,21 @@ route.route("/", (req, res) => {
 route.route("/<int:id>/<int:ido>", (req, res) => {
 	console.log(req.params.id, req.params.ido)
   res.sendJson({ "-->": "<--" }, 200);
-});
+}, {methods: ["GET"]}) ;
 
 asi.use(route);
 
-//asi.setup({
-//  port:3100,
-//  debug: true
-//})
+asi.setup({
+ port:3100,
+ debug: true
+})
 
 //url.route("/", (req, res) => {
 //console.log(res.sendJson)
 //res.sendJson({"-->": "<--"}, 200)
 //}
 //)
-//
+
 //class Hello {
 //  constructor(){
 //  }

@@ -25,15 +25,15 @@ export default class MiddlewareManager implements MiddlewareManagerI {
 			const current = middelwareList[index];
 			if (current) {
 				return Promise.resolve(
-					await current(req, res, () => {
-						dispach(index + 1);
+					await current(req, res, async () => {
+				       await dispach(index + 1);
 					}),
 				);
 			}
 			return Promise.resolve();
 		}
 
-		dispach(0);
+		return dispach(0);
 	}
 
 	async run(

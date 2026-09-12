@@ -34,7 +34,7 @@ export default class Asimilation {
 	}
 
 	setup(config: ConfigType): void {
-		const port: number | undefined = config.port;
+		const port: number  = config.port ?? 3000;
 		this.#config.setPort(port);
 	}
 
