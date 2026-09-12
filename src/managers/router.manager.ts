@@ -16,6 +16,7 @@ import type { ArgumentedServerResponseInterface } from "../interfaces/custom-ser
 import { ArgumentedIncomingMessageImp } from "../classes/req_and_res.implement.js";
 import { ArgumentResponse } from "../helpers/message-exchange-proxie.helper.js";
 import { normalizePath } from "../helpers/url-regex.js";
+import { parseQuery } from '../helpers/query.helper.js';
 
 export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 	#middlewareManger: MiddlewareManagerI;
@@ -109,8 +110,13 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 		const isStatic: boolean = this.#pathInclude(url);
 		const isDynamic: RegExp | undefined = this.#findMatchingDynamicPath(url);
 		const handler: RouteMap | undefined = this.#getHandler(url, isDynamic, isStatic);
+    
 
-		this.#middlewareManger.run(newRequest, newResponse, (_, __, next) => {
+    if (queryParam ){
+      newRequest.query =  parseQuery(queryParam)
+    }
+		
+    this.#middlewareManger.run(newRequest, newResponse, (_, __, next) => {
 			if (!this.#validateRoute(handler, method, newRequest, newResponse)) return;
 
 			const callback: Controller = validateCallbackExistence(
@@ -118,6 +124,7 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 			);
 			const paramsForRequest: StringObject = this.#buildParams(url, isDynamic);
 			const callbacks: MiddlewareFunction[] = handler!.get(method!)?.middlewares ?? [];
+      newRequest.params as ArgumentedIncomingMessageInterface<typeof newRequest>
 			// run espesific middelwares
 			this.#middlewareManger.runRouteMiddlewares(newRequest, newResponse, callbacks, (_, __, nextR) => {
 				newRequest.params = paramsForRequest;

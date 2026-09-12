@@ -1,9 +1,18 @@
-import type { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
-import { ServerResponse, IncomingMessage } from "node:http";
+import { ArgumentedIncomingMessageInterface } from "../interfaces/custom-request.js";
+import {
+	sendJsonMessage,
+	sendTextMessage,
+	redirect as redirectFn,
+} from "../helpers/http-responses.js";
+import { ServerResponse, IncomingMessage } from "http";
 
-export abstract class ArgumentedIncomingMessageAbc
+export abstract class ArgumentedIncomingMessageAbc<
+  P extends Record<string, any> = Record<string, any>, 
+  Q extends Record<string, any> = Record<string, any>
+>
 	extends IncomingMessage
-	implements ArgumentedIncomingMessageInterface
+	implements ArgumentedIncomingMessageInterface<P,Q>
 {
-	params!: Record<string, string>;
+	params!: P;
+  query: Q;
 }
