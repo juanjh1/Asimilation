@@ -13,6 +13,6 @@ export abstract class ArgumentedIncomingMessageAbc<
 	extends IncomingMessage
 	implements ArgumentedIncomingMessageInterface<P,Q>
 {
-	params!: P;
-  query: Q;
+	params  !: P;
+  query   !: Q;
 }

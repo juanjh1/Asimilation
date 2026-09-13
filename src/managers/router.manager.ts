@@ -94,7 +94,7 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 				: undefined;
 	}
 
-	@bound controllerHandler(req: IncomingMessage, res: ServerResponse): void {
+	@bound async controllerHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		const newRequest: ArgumentedIncomingMessageInterface = Object.assign(
 			req,
 			Object.create(ArgumentedIncomingMessageImp.prototype),
@@ -114,9 +114,9 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 
     if (queryParam ){
       newRequest.query =  parseQuery(queryParam)
-    }
+    }else { newRequest.query = {}}
 		
-    this.#middlewareManger.run(newRequest, newResponse, (_, __, next) => {
+   await this.#middlewareManger.run(newRequest, newResponse, async (_, __, next) => {
 			if (!this.#validateRoute(handler, method, newRequest, newResponse)) return;
 
 			const callback: Controller = validateCallbackExistence(
@@ -126,14 +126,14 @@ export class RouteManager extends AddRoutePathAbc implements RouteManagerI {
 			const callbacks: MiddlewareFunction[] = handler!.get(method!)?.middlewares ?? [];
       newRequest.params as ArgumentedIncomingMessageInterface<typeof newRequest>
 			// run espesific middelwares
-			this.#middlewareManger.runRouteMiddlewares(newRequest, newResponse, callbacks, (_, __, nextR) => {
+			await this.#middlewareManger.runRouteMiddlewares(newRequest, newResponse, callbacks, async (_, __, nextR) => {
 				newRequest.params = paramsForRequest;
 
 				if (res.writableEnded) return;
-				callback(newRequest, newResponse);
-				nextR();
+				await callback(newRequest, newResponse);
+				await nextR();
 			});
-			next();
+			await next();
 		});
 	}
 }

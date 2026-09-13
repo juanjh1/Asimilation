@@ -1,9 +1,9 @@
-import { type FunctionDescriptor, type RouteMap, routeToken } from "../core/type";
-import { RedexTreeNode } from "../utils/dataestructures/radexTree";
+import type { FunctionDescriptor, RouteMap } from "../core/type";
+import { TrieNode } from "../utils/dataestructures/radexTree";
 
-class RouteNode extends RedexTreeNode<string | RegExp> {
+class RouteNode extends TrieNode<string | RegExp> {
 	#routeMap?: RouteMap;
-	#reguexMap: Map<RegExp, RedexTreeNode<string>>;
+	#reguexMap: Map<string, RouteNode>;
 
 	private constructor(flag: boolean, value: string | null) {
 		super(flag, value);
@@ -26,7 +26,7 @@ class RouteNode extends RedexTreeNode<string | RegExp> {
 	}
 
 	public addMethods(controller: FunctionDescriptor, methods: string[]): void {
-		if (this.#routeMap == undefined) {
+		if (this.#routeMap === undefined) {
 			throw TypeError("You can't set controllers, this route is not a flaged node");
 		}
 
@@ -36,7 +36,7 @@ class RouteNode extends RedexTreeNode<string | RegExp> {
 	}
 
 	private validateTokensLength(tokens: string[]) {
-		if (tokens.length == 0) {
+		if (tokens.length === 0) {
 			throw new Error("the substring can be empty");
 		}
 	}
@@ -52,13 +52,13 @@ class RouteNode extends RedexTreeNode<string | RegExp> {
 		const currentToken: string = tokens[0];
 
 		if (
-			(typeof this.value == "string" && this.value != currentToken) ||
+			(typeof this.value === "string" && this.value !== currentToken) ||
 			(this.value instanceof RegExp && !this.value.test(currentToken))
 		) {
 			return null;
 		}
 
-		if (tokens.length == 1) {
+		if (tokens.length === 1) {
 			return this.isLeaf() ? (this.#routeMap ?? null) : null;
 		}
 
