@@ -8,9 +8,10 @@ const asi = Asimilation.init();
 
 const route = new Router("hello");
 
-route.route("/", (req, res) => {
+route.route("/", async (req, res) => {
 	//    console.log(res.sendJson)
   console.log(req.query.hola)
+  await Promise.resolve()
 	res.sendJson({ "-->": "<--" }, 200);
 },);
 
